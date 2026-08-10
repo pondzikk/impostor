@@ -85,7 +85,10 @@ export const ADULT = [
 ["mokra cipka","ciasna cipka"],["rozbierany poker","butelka na rozbieranie"],["głęboki dekolt","prześwitująca bluzka"],["całowanie po szyi","gryzienie ucha"],
 ["seks po pijaku","seks na kacu"],["seks w windzie","seks w toalecie klubu"],["wytrysk na twarz","wytrysk na cycki"],["sutki","piercing intymny"],
 ["depilacja bikini","gładka cipka"],["pierwszy raz","rozdziewiczenie"],["skrzypiące łóżko","cienkie ściany"],["seks przy lustrze","ruchanie przy świecach"],
-["afrodyzjak","ostrygi"],["viagra","wzwód na tabletce"],["seks analny","wejście od tyłu"],["seks podczas okresu","krew na prześcieradle"]
+["afrodyzjak","ostrygi"],["viagra","wzwód na tabletce"],["seks analny","wejście od tyłu"],["seks podczas okresu","krew na prześcieradle"],
+["gang bang","bukkake"],["squirting","tryskający orgazm"],["rimming","lizanie od tyłu"],["fisting","cała dłoń w akcji"],
+["złoty deszcz","zabawy z sikaniem"],["pegging","strap-on"],["BDSM","sado-maso"],["dominatrix","sesja u pani dominy"],
+["OnlyFans","kamerki dla dorosłych"],["agencja towarzyska","dziewczyna na telefon"]
 ]},
 {id:'sypialnia',name:'Sypialnia',words:[
 ["wibrator","króliczek"],["kajdanki","opaska na oczy"],["stringi","bielizna erotyczna"],["kamasutra","karty z pozycjami"],
@@ -97,7 +100,9 @@ export const ADULT = [
 ["seks pod prysznicem","wspólna kąpiel z pianą"],["rozrzucone ubrania","urwane guziki"],["ślady paznokci na plecach","zadrapania"],["klaps w tyłek","ugryzienie w pośladek"],
 ["hotel na godziny","pokój z jacuzzi"],["sekretna szuflada","pudełko pod łóżkiem"],["lustro na suficie","okrągłe łóżko"],["połamane łóżko","sąsiedzi walący w ścianę"],
 ["sekstaśma","domowe porno"],["nagrywanie się w łóżku","kamerka w sypialni"],["gorący wosk","kostki lodu"],["krępowanie szarfą","wiązanie do łóżka"],
-["kości erotyczne","gra w rozbieranego"],["mokre prześcieradło","plama na pościeli"],["tort w kształcie penisa","balony w kształcie penisa"],["seks od rana","numerek przed pracą"]
+["kości erotyczne","gra w rozbieranego"],["mokre prześcieradło","plama na pościeli"],["tort w kształcie penisa","balony w kształcie penisa"],["seks od rana","numerek przed pracą"],
+["huśtawka erotyczna","krzyż świętego Andrzeja"],["zaciski na sutki","elektrostymulacja"],["knebel kulkowy","obroża ze smyczą"],["uprząż","liny do shibari"],
+["czerwony pokój","loch rozkoszy"],["gorące lizanie lodów","banan w roli głównej"]
 ]},
 {id:'randki',name:'Randki i podryw',words:[
 ["Tinder","Badoo"],["ghosting","friendzone"],["randka w ciemno","speed dating"],["sugar daddy","utrzymanka"],

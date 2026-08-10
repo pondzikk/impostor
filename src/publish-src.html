@@ -110,7 +110,7 @@ button{font-family:inherit;}
       <div style="display:flex;flex-direction:column;gap:18px;background:#12121c;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px 16px;">
         <button onClick="{{ toggleHint }}" style="display:flex;align-items:center;gap:12px;border:none;background:none;padding:0;color:#f2f3f7;cursor:pointer;text-align:left;">
           <div style="flex:1;">
-            <div style="font-size:15px;font-weight:700;">Podpowiedź kategorii</div>
+            <div style="font-size:15px;font-weight:700;">Podpowiedź dla impostora</div>
             <div style="font-size:12.5px;color:rgba(242,243,247,.5);margin-top:2px;">Impostor widzi kategorię hasła</div>
           </div>
           <div style="width:46px;height:27px;flex-shrink:0;border-radius:999px;background:{{ hintKnobBg }};position:relative;transition:background .2s;">
@@ -201,6 +201,7 @@ button{font-family:inherit;}
           <div style="margin-top:10px;font-size:34px;">🤫</div>
           <sc-if value="{{ showCatHint }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top:14px;display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(var(--acc2-rgb),.12);border:1px solid rgba(var(--acc2-rgb),.4);font-size:14px;font-weight:700;color:var(--acc2);">Kategoria: {{ catName }}</div>
+            <div style="margin-top:8px;display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(var(--acc-rgb),.10);border:1px solid rgba(var(--acc-rgb),.35);font-size:14px;font-weight:700;color:var(--acc);">Podpowiedź: coś jak „{{ impHint }}”</div>
           </sc-if>
           <div style="margin-top:12px;font-size:13.5px;color:rgba(242,243,247,.55);">Blefuj, jakbyś znał(a) hasło.</div>
         </sc-if>
@@ -803,7 +804,7 @@ class Component extends DCLogic {
       holdStart:e=>{ if(e && e.preventDefault) e.preventDefault(); this.vib(25); this.setState({holding:true}); clearTimeout(this.holdT); this.holdT=setTimeout(()=>{ if(this.state.holding) this.setState({seen:true}); },1000); },
       holdEnd:()=>{ clearTimeout(this.holdT); if(this.state.holding) this.setState({holding:false}); },
       cardIsImp, cardIsCrew: scr==='card' && !cardIsImp,
-      cardWord, showCatHint:s.hintCat, catName:s.catName, catNameUp:U(s.catName),
+      cardWord, showCatHint:s.hintCat, impHint:U(s.impWord), catName:s.catName, catNameUp:U(s.catName),
       holdFill:s.holding?'scaleX(1)':'scaleX(0)',
       holdTrans:s.holding?'transform 1s linear':'transform .15s ease',
       passOp:s.seen?'1':'.35',
