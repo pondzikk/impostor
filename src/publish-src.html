@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--acc:#00e5ff;--acc2:#ff9f1c;--acc-rgb:0,229,255;--acc2-rgb:255,159,28;}
+html,body{margin:0;background:#07070d;color:#f2f3f7;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;}
+html{touch-action:manipulation;}
+body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none;}
+input{-webkit-user-select:text;user-select:text;}
+a{color:var(--acc);text-decoration:none;} a:hover{color:var(--acc2);}
+button{font-family:inherit;}
+::selection{background:rgba(var(--acc-rgb),.4);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes glowPulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+@keyframes blinkSoft{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes confFall{from{transform:translateY(-12vh) rotate(0deg)}to{transform:translateY(112vh) rotate(720deg)}}
+</style>
+</helmet>
+<div style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;background:radial-gradient(620px 440px at 12% -6%, rgba(var(--acc-rgb),.14), transparent 62%), radial-gradient(540px 400px at 108% 106%, rgba(var(--acc2-rgb),.10), transparent 62%), #07070d;" onContextMenu="{{ noCtx }}">
+<div style="width:100%;max-width:460px;padding:22px 18px 28px;display:flex;flex-direction:column;flex:1;">
+
+<sc-if value="{{ scStart }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Start" style="flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;animation:fadeUp .3s ease;padding-bottom:36px;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.22em;color:rgba(242,243,247,.5);">GRA IMPREZOWA · 3–12 OSÓB</div>
+  <h1 style="margin:16px 0 6px;font-size:clamp(50px,15vw,68px);font-weight:900;letter-spacing:.01em;line-height:.95;color:#fff;text-shadow:0 0 38px rgba(var(--acc-rgb),.55);">IMP<span style="display:inline-block;color:var(--acc2);transform:rotate(7deg);text-shadow:0 0 26px rgba(var(--acc2-rgb),.6);">O</span>STOR</h1>
+  <div style="font-size:20px;font-weight:800;color:var(--acc);">Kto ściemnia?</div>
+  <p style="margin:18px auto 0;max-width:300px;font-size:15px;line-height:1.5;color:rgba(242,243,247,.65);">Wszyscy poznają tajne hasło — oprócz jednej osoby. Wytropcie ją, zanim wkręci się w wasze skojarzenia.</p>
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:36px;">
+    <button onClick="{{ goSetup }}" style="width:100%;padding:19px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:19px;font-weight:800;cursor:pointer;box-shadow:0 0 28px rgba(var(--acc-rgb),.35);" style-active="transform:scale(.97);">Nowa gra</button>
+    <button onClick="{{ openRules }}" style="width:100%;padding:17px;border:1px solid rgba(255,255,255,.16);border-radius:16px;background:rgba(255,255,255,.05);color:#f2f3f7;font-size:16px;font-weight:700;cursor:pointer;" style-active="transform:scale(.97);">Zasady</button>
+  </div>
+  <div style="margin-top:26px;font-size:12px;color:rgba(242,243,247,.4);">Jeden telefon podawany z rąk do rąk · Tryb 18+ w ustawieniach</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ scSetup }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Ustawienia" style="display:flex;flex-direction:column;gap:22px;animation:fadeUp .3s ease;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button onClick="{{ backStart }}" style="width:42px;height:42px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(255,255,255,.05);color:#f2f3f7;font-size:18px;cursor:pointer;">←</button>
+    <div style="font-size:24px;font-weight:900;">Nowa gra</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.14em;color:rgba(242,243,247,.55);">GRACZE <span style="color:rgba(242,243,247,.35);">· {{ playersCount }} / 12</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <sc-for list="{{ playerChips }}" as="p" hint-placeholder-count="3">
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 10px 9px 14px;background:#14141f;border:1px solid rgba(255,255,255,.12);border-radius:999px;font-size:15px;font-weight:700;max-width:100%;">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</span>
+          <button onClick="{{ p.rm }}" style="width:24px;height:24px;border:none;border-radius:999px;background:rgba(255,255,255,.1);color:rgba(242,243,247,.7);font-size:13px;cursor:pointer;line-height:1;">✕</button>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input value="{{ nameInput }}" onChange="{{ onName }}" onKeyDown="{{ nameKey }}" placeholder="Imię gracza…" maxLength="16" style="flex:1;min-width:0;padding:15px 16px;background:#101019;border:1px solid rgba(255,255,255,.14);border-radius:14px;color:#fff;font-size:16px;outline:none;">
+      <button onClick="{{ addPlayer }}" style="padding:0 20px;border:none;border-radius:14px;background:rgba(var(--acc-rgb),.16);border:1px solid rgba(var(--acc-rgb),.5);color:var(--acc);font-size:15px;font-weight:800;cursor:pointer;" style-active="transform:scale(.96);">Dodaj</button>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.14em;color:rgba(242,243,247,.55);">IMPOSTORZY</div>
+    <div style="display:flex;align-items:center;gap:14px;background:#14141f;border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:12px 14px;">
+      <button onClick="{{ decImp }}" style="width:46px;height:46px;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(255,255,255,.05);color:#fff;font-size:22px;cursor:pointer;">−</button>
+      <div style="flex:1;text-align:center;font-size:30px;font-weight:900;color:var(--acc);">{{ imps }}</div>
+      <button onClick="{{ incImp }}" style="width:46px;height:46px;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(255,255,255,.05);color:#fff;font-size:22px;cursor:pointer;">+</button>
+    </div>
+    <div style="font-size:13px;color:rgba(242,243,247,.45);">{{ impHintLine }}</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.14em;color:rgba(242,243,247,.55);">TRYB HASEŁ</div>
+    <div style="display:flex;gap:10px;">
+      <button onClick="{{ pickFamily }}" style="flex:1;padding:16px 12px;border:1.5px solid {{ famBd }};border-radius:16px;background:{{ famBg }};color:#f2f3f7;cursor:pointer;text-align:left;" style-active="transform:scale(.97);">
+        <div style="font-size:17px;font-weight:800;">Rodzinny</div>
+        <div style="font-size:12px;color:rgba(242,243,247,.5);margin-top:3px;">dla wszystkich</div>
+      </button>
+      <button onClick="{{ pickAdult }}" style="flex:1;padding:16px 12px;border:1.5px solid {{ adBd }};border-radius:16px;background:{{ adBg }};color:#f2f3f7;cursor:pointer;text-align:left;" style-active="transform:scale(.97);">
+        <div style="font-size:17px;font-weight:800;color:var(--acc2);">18+</div>
+        <div style="font-size:12px;color:rgba(242,243,247,.5);margin-top:3px;">{{ adultSub }}</div>
+      </button>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.14em;color:rgba(242,243,247,.55);">KATEGORIE HASEŁ</div>
+      <button onClick="{{ allCats }}" style="border:none;background:none;color:var(--acc);font-size:13px;font-weight:700;cursor:pointer;padding:4px;">{{ allCatsLabel }}</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="6">
+        <button onClick="{{ c.toggle }}" style="padding:11px 14px;border:1.5px solid {{ c.bd }};border-radius:999px;background:{{ c.bg }};color:{{ c.col }};font-size:14px;font-weight:700;cursor:pointer;" style-active="transform:scale(.96);">{{ c.name }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <button onClick="{{ toggleAdv }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:15px 16px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.04);color:#f2f3f7;font-size:15px;font-weight:700;cursor:pointer;">
+      <span>Więcej opcji</span><span style="color:rgba(242,243,247,.5);">{{ advArrow }}</span>
+    </button>
+    <sc-if value="{{ adv }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:18px;background:#12121c;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px 16px;">
+        <button onClick="{{ toggleHint }}" style="display:flex;align-items:center;gap:12px;border:none;background:none;padding:0;color:#f2f3f7;cursor:pointer;text-align:left;">
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:700;">Podpowiedź kategorii</div>
+            <div style="font-size:12.5px;color:rgba(242,243,247,.5);margin-top:2px;">Impostor widzi kategorię hasła</div>
+          </div>
+          <div style="width:46px;height:27px;flex-shrink:0;border-radius:999px;background:{{ hintKnobBg }};position:relative;transition:background .2s;">
+            <div style="position:absolute;top:2.5px;left:{{ hintKnobX }};width:22px;height:22px;border-radius:999px;background:#fff;transition:left .2s;"></div>
+          </div>
+        </button>
+        <button onClick="{{ toggleTwin }}" style="display:flex;align-items:center;gap:12px;border:none;background:none;padding:0;color:#f2f3f7;cursor:pointer;text-align:left;">
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:700;">Bliźniacze hasło <span style="font-size:11px;font-weight:800;color:var(--acc2);letter-spacing:.06em;">TRUDNY</span></div>
+            <div style="font-size:12.5px;color:rgba(242,243,247,.5);margin-top:2px;">Impostor dostaje podobne hasło i nie wie, że jest impostorem</div>
+          </div>
+          <div style="width:46px;height:27px;flex-shrink:0;border-radius:999px;background:{{ twinKnobBg }};position:relative;transition:background .2s;">
+            <div style="position:absolute;top:2.5px;left:{{ twinKnobX }};width:22px;height:22px;border-radius:999px;background:#fff;transition:left .2s;"></div>
+          </div>
+        </button>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:rgba(242,243,247,.6);margin-bottom:8px;">Timer wypowiedzi</div>
+          <div style="display:flex;gap:8px;">
+            <sc-for list="{{ timerOpts }}" as="o" hint-placeholder-count="3">
+              <button onClick="{{ o.pick }}" style="flex:1;padding:12px 4px;border:1.5px solid {{ o.bd }};border-radius:12px;background:{{ o.bg }};color:{{ o.col }};font-size:14px;font-weight:700;cursor:pointer;">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:rgba(242,243,247,.6);margin-bottom:8px;">Okrążenia skojarzeń</div>
+          <div style="display:flex;gap:8px;">
+            <sc-for list="{{ lapsOpts }}" as="o" hint-placeholder-count="3">
+              <button onClick="{{ o.pick }}" style="flex:1;padding:12px 4px;border:1.5px solid {{ o.bd }};border-radius:12px;background:{{ o.bg }};color:{{ o.col }};font-size:14px;font-weight:700;cursor:pointer;">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:rgba(242,243,247,.6);margin-bottom:8px;">Głosowanie</div>
+          <div style="display:flex;gap:8px;">
+            <sc-for list="{{ votingOpts }}" as="o" hint-placeholder-count="2">
+              <button onClick="{{ o.pick }}" style="flex:1;padding:12px 4px;border:1.5px solid {{ o.bd }};border-radius:12px;background:{{ o.bg }};color:{{ o.col }};font-size:14px;font-weight:700;cursor:pointer;">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:rgba(242,243,247,.6);margin-bottom:8px;">Rundy w partii</div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <button onClick="{{ decR }}" style="width:42px;height:42px;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(255,255,255,.05);color:#fff;font-size:20px;cursor:pointer;">−</button>
+            <div style="flex:1;text-align:center;font-size:24px;font-weight:900;">{{ totalRounds }}</div>
+            <button onClick="{{ incR }}" style="width:42px;height:42px;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:rgba(255,255,255,.05);color:#fff;font-size:20px;cursor:pointer;">+</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}">
+    <div style="padding:13px 16px;border-radius:14px;background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.4);color:#ff9d9d;font-size:14px;font-weight:600;">{{ err }}</div>
+  </sc-if>
+  <button onClick="{{ start }}" style="width:100%;padding:20px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:19px;font-weight:800;cursor:pointer;box-shadow:0 0 28px rgba(var(--acc-rgb),.35);opacity:{{ startOp }};" style-active="transform:scale(.97);">Rozdaj role</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ scPass }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Przekazanie telefonu" style="flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;gap:0;animation:fadeUp .3s ease;padding-bottom:30px;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(242,243,247,.45);">{{ roundTag }} · ROZDANIE RÓL</div>
+  <div style="margin-top:6px;font-size:13px;color:rgba(242,243,247,.4);">Gracz {{ riNum }} z {{ playersCount }}</div>
+  <div style="margin-top:44px;font-size:16px;color:rgba(242,243,247,.6);">Podaj telefon:</div>
+  <div style="margin-top:8px;font-size:clamp(38px,11vw,50px);font-weight:900;color:var(--acc);text-shadow:0 0 30px rgba(var(--acc-rgb),.5);overflow-wrap:anywhere;">{{ riName }}</div>
+  <button onClick="{{ tapPass }}" style="margin-top:48px;width:100%;padding:19px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 0 28px rgba(var(--acc-rgb),.3);" style-active="transform:scale(.97);">Mam telefon</button>
+  <div style="margin-top:14px;font-size:13px;color:rgba(242,243,247,.4);">Upewnij się, że nikt inny nie patrzy na ekran.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ scCard }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Karta roli" style="flex:1;display:flex;flex-direction:column;justify-content:center;animation:fadeUp .3s ease;padding-bottom:16px;">
+  <div style="text-align:center;font-size:15px;font-weight:700;color:rgba(242,243,247,.65);">{{ riName }} — tylko dla twoich oczu</div>
+  <div onPointerDown="{{ holdStart }}" onPointerUp="{{ holdEnd }}" onPointerLeave="{{ holdEnd }}" onPointerCancel="{{ holdEnd }}" style="position:relative;margin-top:18px;height:min(52vh,380px);border-radius:24px;border:1.5px solid rgba(var(--acc-rgb),.35);background:linear-gradient(160deg,#151522,#0d0d16);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;touch-action:none;box-shadow:inset 0 0 60px rgba(var(--acc-rgb),.06);">
+    <sc-if value="{{ notHolding }}" hint-placeholder-val="{{ true }}">
+      <div style="text-align:center;padding:20px;">
+        <div style="width:74px;height:74px;margin:0 auto 20px;border-radius:999px;border:2px solid rgba(var(--acc-rgb),.7);animation:glowPulse 1.6s ease infinite;display:flex;align-items:center;justify-content:center;">
+          <div style="width:40px;height:40px;border-radius:999px;background:rgba(var(--acc-rgb),.25);"></div>
+        </div>
+        <div style="font-size:20px;font-weight:900;letter-spacing:.08em;">PRZYTRZYMAJ</div>
+        <div style="margin-top:6px;font-size:14px;color:rgba(242,243,247,.5);">aby odsłonić swoją rolę</div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ holding }}" hint-placeholder-val="{{ false }}">
+      <div style="text-align:center;padding:22px;animation:popIn .18s ease;width:100%;">
+        <sc-if value="{{ cardIsImp }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:13px;font-weight:700;letter-spacing:.2em;color:rgba(242,243,247,.5);">TWOJA ROLA</div>
+          <div style="margin-top:14px;font-size:clamp(30px,9vw,40px);font-weight:900;line-height:1.05;color:var(--acc2);text-shadow:0 0 34px rgba(var(--acc2-rgb),.55);">JESTEŚ<br>IMPOSTOREM</div>
+          <div style="margin-top:10px;font-size:34px;">🤫</div>
+          <sc-if value="{{ showCatHint }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:14px;display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(var(--acc2-rgb),.12);border:1px solid rgba(var(--acc2-rgb),.4);font-size:14px;font-weight:700;color:var(--acc2);">Kategoria: {{ catName }}</div>
+          </sc-if>
+          <div style="margin-top:12px;font-size:13.5px;color:rgba(242,243,247,.55);">Blefuj, jakbyś znał(a) hasło.</div>
+        </sc-if>
+        <sc-if value="{{ cardIsCrew }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:13px;font-weight:700;letter-spacing:.2em;color:rgba(242,243,247,.5);">TWOJE HASŁO</div>
+          <div style="margin-top:14px;font-size:clamp(26px,8vw,38px);font-weight:900;line-height:1.15;color:var(--acc);text-shadow:0 0 34px rgba(var(--acc-rgb),.5);overflow-wrap:anywhere;">{{ cardWord }}</div>
+          <div style="margin-top:16px;font-size:13.5px;color:rgba(242,243,247,.55);">Zapamiętaj je. Nie mów go na głos!</div>
+        </sc-if>
+      </div>
+    </sc-if>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.07);">
+      <div style="height:100%;background:var(--acc);transform-origin:left;transform:{{ holdFill }};transition:{{ holdTrans }};"></div>
+    </div>
+  </div>
+  <div style="margin-top:12px;text-align:center;font-size:13px;color:rgba(242,243,247,.45);">Rola znika, gdy puścisz kartę.</div>
+  <button onClick="{{ passNext }}" style="margin-top:20px;width:100%;padding:19px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:18px;font-weight:800;cursor:pointer;opacity:{{ passOp }};box-shadow:0 0 28px rgba(var(--acc-rgb),.25);" style-active="transform:scale(.97);">{{ passBtnLabel }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ scRound }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Runda skojarzeń" style="flex:1;display:flex;flex-direction:column;animation:fadeUp .3s ease;">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(242,243,247,.45);">{{ roundTag }}</div>
+    <sc-if value="{{ notDiscuss }}" hint-placeholder-val="{{ false }}">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--acc);">OKRĄŻENIE {{ lap }} / {{ laps }}</div>
+    </sc-if>
+  </div>
+  <sc-if value="{{ notDiscuss }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:14px;font-size:21px;font-weight:900;">Mówcie po jednym skojarzeniu</div>
+    <div style="margin-top:4px;font-size:13.5px;color:rgba(242,243,247,.5);">Na głos, w tej kolejności. Telefonu nie pokazujecie.</div>
+    <sc-if value="{{ timerOn }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:18px;text-align:center;font-variant-numeric:tabular-nums;font-size:56px;font-weight:900;color:{{ timerCol }};animation:{{ timerAnim }};line-height:1;">{{ tleft }}</div>
+    </sc-if>
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;">
+      <sc-for list="{{ orderRows }}" as="r" hint-placeholder-count="4">
+        <div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:{{ r.bg }};border:1.5px solid {{ r.bd }};">
+          <div style="width:28px;height:28px;flex-shrink:0;border-radius:999px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:rgba(242,243,247,.7);">{{ r.num }}</div>
+          <div style="flex:1;font-size:16.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.name }}</div>
+          <sc-if value="{{ r.cur }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--acc);animation:blinkSoft 1.4s ease infinite;">MÓWI</div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top:auto;padding-top:18px;display:flex;flex-direction:column;gap:10px;">
+      <button onClick="{{ nextSpeaker }}" style="width:100%;padding:18px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:17px;font-weight:800;cursor:pointer;" style-active="transform:scale(.97);">{{ nextSpeakerLabel }}</button>
+      <button onClick="{{ toVoting }}" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(255,255,255,.04);color:rgba(242,243,247,.7);font-size:14px;font-weight:700;cursor:pointer;">Pomiń do głosowania</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{ discuss }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;">
+      <div style="font-size:clamp(34px,10vw,44px);font-weight:900;text-shadow:0 0 30px rgba(var(--acc-rgb),.4);">DYSKUSJA</div>
+      <p style="margin:14px auto 0;max-width:300px;font-size:15px;line-height:1.5;color:rgba(242,243,247,.6);">Kto brzmiał podejrzanie? Dopytujcie, oskarżajcie, brońcie się. Gdy będziecie gotowi:</p>
+    </div>
+    <button onClick="{{ toVoting }}" style="width:100%;padding:20px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:19px;font-weight:800;cursor:pointer;box-shadow:0 0 28px rgba(var(--acc-rgb),.35);" style-active="transform:scale(.97);">GŁOSUJEMY!</button>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ scVotePass }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Przekazanie do głosu" style="flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;animation:fadeUp .3s ease;padding-bottom:30px;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(242,243,247,.45);">{{ roundTag }} · GŁOSOWANIE TAJNE</div>
+  <sc-if value="{{ runoffOn }}" hint-placeholder-val="{{ false }}">
+    <div style="margin:14px auto 0;display:inline-block;padding:7px 16px;border-radius:999px;background:rgba(var(--acc2-rgb),.14);border:1px solid rgba(var(--acc2-rgb),.5);color:var(--acc2);font-size:13px;font-weight:800;letter-spacing:.12em;">DOGRYWKA</div>
+  </sc-if>
+  <div style="margin-top:40px;font-size:16px;color:rgba(242,243,247,.6);">Podaj telefon:</div>
+  <div style="margin-top:8px;font-size:clamp(38px,11vw,50px);font-weight:900;color:var(--acc);text-shadow:0 0 30px rgba(var(--acc-rgb),.5);overflow-wrap:anywhere;">{{ viName }}</div>
+  <div style="margin-top:6px;font-size:13px;color:rgba(242,243,247,.4);">Głos {{ viNum }} z {{ playersCount }}</div>
+  <button onClick="{{ tapVotePass }}" style="margin-top:44px;width:100%;padding:19px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:18px;font-weight:800;cursor:pointer;" style-active="transform:scale(.97);">Głosuję</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ scVote }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Głos tajny" style="flex:1;display:flex;flex-direction:column;animation:fadeUp .3s ease;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(242,243,247,.45);">GŁOSUJE: {{ viNameUp }}</div>
+  <div style="margin-top:12px;font-size:24px;font-weight:900;">Kto jest impostorem?</div>
+  <sc-if value="{{ runoffOn }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:6px;font-size:13.5px;font-weight:700;color:var(--acc2);">Dogrywka — wybierasz tylko spośród remisujących.</div>
+  </sc-if>
+  <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <sc-for list="{{ voteGrid }}" as="v" hint-placeholder-count="4">
+      <button onClick="{{ v.pick }}" style="min-height:64px;padding:12px;border:1.5px solid rgba(255,255,255,.14);border-radius:16px;background:#14141f;color:#f2f3f7;font-size:16px;font-weight:800;cursor:pointer;overflow-wrap:anywhere;" style-active="transform:scale(.96);border-color:var(--acc);">{{ v.name }}</button>
+    </sc-for>
+  </div>
+  <div style="margin-top:14px;font-size:13px;color:rgba(242,243,247,.4);text-align:center;">Twój głos jest tajny — po wyborze podaj telefon dalej.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ scAloud }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Głosowanie na głos" style="flex:1;display:flex;flex-direction:column;animation:fadeUp .3s ease;">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(242,243,247,.45);">{{ roundTag }} · GŁOSOWANIE NA GŁOS</div>
+  <div style="margin-top:12px;font-size:24px;font-weight:900;">{{ aloudTitle }}</div>
+  <div style="margin-top:6px;font-size:14px;line-height:1.45;color:rgba(242,243,247,.55);">Na „trzy-cztery!" wszyscy wskazują palcem. Zaznacz, na kogo padło — przy remisie zaznacz wszystkich remisujących.</div>
+  <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <sc-for list="{{ aloudGrid }}" as="v" hint-placeholder-count="4">
+      <button onClick="{{ v.toggle }}" style="min-height:64px;padding:12px;border:1.5px solid {{ v.bd }};border-radius:16px;background:{{ v.bg }};color:{{ v.col }};font-size:16px;font-weight:800;cursor:pointer;overflow-wrap:anywhere;" style-active="transform:scale(.96);">{{ v.name }}</button>
+    </sc-for>
+  </div>
+  <div style="margin-top:auto;padding-top:18px;">
+    <button onClick="{{ aloudConfirm }}" style="width:100%;padding:19px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:18px;font-weight:800;cursor:pointer;opacity:{{ aloudOp }};" style-active="transform:scale(.97);">Zatwierdź wynik</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ scVerdict }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Werdykt" style="flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;animation:fadeUp .3s ease;padding-bottom:30px;">
+  <div style="font-size:16px;color:rgba(242,243,247,.6);">Wskazaliście:</div>
+  <div style="margin-top:8px;font-size:clamp(40px,12vw,54px);font-weight:900;overflow-wrap:anywhere;">{{ accusedName }}</div>
+  <sc-if value="{{ notRevealed }}" hint-placeholder-val="{{ false }}">
+    <button onClick="{{ revealVerdict }}" style="margin-top:48px;width:100%;padding:20px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 0 28px rgba(var(--acc-rgb),.35);" style-active="transform:scale(.97);">Sprawdźmy, kim jest…</button>
+  </sc-if>
+  <sc-if value="{{ revealed }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:34px;animation:popIn .25s ease;">
+      <sc-if value="{{ caught }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:clamp(38px,11vw,50px);font-weight:900;color:var(--acc);text-shadow:0 0 40px rgba(var(--acc-rgb),.6);">IMPOSTOR!</div>
+        <div style="margin-top:10px;font-size:15px;color:rgba(242,243,247,.6);">Załoga miała nosa. Ale to jeszcze nie koniec…</div>
+      </sc-if>
+      <sc-if value="{{ notCaught }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:clamp(38px,11vw,50px);font-weight:900;color:var(--acc2);text-shadow:0 0 40px rgba(var(--acc2-rgb),.6);">NIEWINNY…</div>
+        <div style="margin-top:10px;font-size:15px;color:rgba(242,243,247,.6);">Impostor wciąż jest wśród was — i właśnie wygrał rundę.</div>
+      </sc-if>
+      <button onClick="{{ afterVerdict }}" style="margin-top:36px;width:100%;padding:19px;border:none;border-radius:16px;background:{{ verdictBtnBg }};color:#04141a;font-size:17px;font-weight:800;cursor:pointer;" style-active="transform:scale(.97);">{{ verdictBtnLabel }}</button>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ scChance }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Ostatnia szansa" style="flex:1;display:flex;flex-direction:column;animation:fadeUp .3s ease;">
+  <div style="text-align:center;font-size:clamp(26px,8vw,32px);font-weight:900;color:var(--acc2);text-shadow:0 0 30px rgba(var(--acc2-rgb),.5);">OSTATNIA SZANSA</div>
+  <div style="margin-top:6px;text-align:center;font-size:14px;line-height:1.45;color:rgba(242,243,247,.6);"><b>{{ accusedName }}</b> — wskaż prawdziwe hasło i ukradnij zwycięstwo rundy!</div>
+  <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <sc-for list="{{ chanceCards }}" as="c" hint-placeholder-count="8">
+      <button onClick="{{ c.pick }}" style="min-height:76px;padding:12px 10px;border:1.5px solid {{ c.bd }};border-radius:16px;background:{{ c.bg }};color:{{ c.col }};font-size:15px;font-weight:800;line-height:1.25;cursor:pointer;overflow-wrap:anywhere;opacity:{{ c.op }};" style-active="transform:scale(.96);">{{ c.w }}</button>
+    </sc-for>
+  </div>
+  <sc-if value="{{ chanceDone }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:16px;text-align:center;animation:popIn .25s ease;">
+      <div style="font-size:22px;font-weight:900;color:{{ chanceResCol }};">{{ chanceResTitle }}</div>
+      <div style="margin-top:4px;font-size:14px;color:rgba(242,243,247,.6);">{{ chanceResSub }}</div>
+      <button onClick="{{ toSummary }}" style="margin-top:18px;width:100%;padding:18px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:17px;font-weight:800;cursor:pointer;" style-active="transform:scale(.97);">Podsumowanie rundy</button>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ scSummary }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Podsumowanie rundy" style="flex:1;display:flex;flex-direction:column;animation:fadeUp .3s ease;gap:14px;">
+  <div style="text-align:center;margin-bottom:4px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.2em;color:rgba(242,243,247,.45);">{{ roundTag }}</div>
+    <div style="margin-top:10px;font-size:clamp(24px,7.5vw,30px);font-weight:900;color:{{ resColor }};text-shadow:0 0 30px {{ resGlow }};line-height:1.15;">{{ resTitle }}</div>
+    <div style="margin-top:6px;font-size:14px;color:rgba(242,243,247,.6);">{{ resSub }}</div>
+  </div>
+  <div style="background:#14141f;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:16px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.16em;color:rgba(242,243,247,.5);">HASŁO · {{ catNameUp }}</div>
+    <div style="margin-top:6px;font-size:24px;font-weight:900;color:var(--acc);overflow-wrap:anywhere;">{{ wordUp }}</div>
+    <sc-if value="{{ twinMode }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:10px;font-size:11px;font-weight:700;letter-spacing:.16em;color:rgba(242,243,247,.5);">BLIŹNIACZE HASŁO IMPOSTORA</div>
+      <div style="margin-top:4px;font-size:19px;font-weight:800;color:var(--acc2);overflow-wrap:anywhere;">{{ impWordUp }}</div>
+    </sc-if>
+  </div>
+  <div style="background:#14141f;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:16px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.16em;color:rgba(242,243,247,.5);">{{ impLabel }}</div>
+    <div style="margin-top:6px;font-size:20px;font-weight:900;color:var(--acc2);overflow-wrap:anywhere;">{{ impNames }}</div>
+    <sc-if value="{{ hasCorrect }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:10px;font-size:11px;font-weight:700;letter-spacing:.16em;color:rgba(242,243,247,.5);">TRAFNE GŁOSY</div>
+      <div style="margin-top:4px;font-size:15px;font-weight:700;color:rgba(242,243,247,.85);overflow-wrap:anywhere;">{{ correctLine }}</div>
+    </sc-if>
+  </div>
+  <sc-if value="{{ hasPts }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#14141f;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.16em;color:rgba(242,243,247,.5);">PUNKTY ZA RUNDĘ</div>
+      <sc-for list="{{ resPts }}" as="p" hint-placeholder-count="2">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:15.5px;font-weight:700;">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</span>
+          <span style="color:var(--acc);font-weight:900;">+{{ p.d }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <button onClick="{{ toScores }}" style="margin-top:auto;width:100%;padding:19px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:18px;font-weight:800;cursor:pointer;" style-active="transform:scale(.97);">Tabela wyników</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ scScores }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Tabela wyników" style="flex:1;display:flex;flex-direction:column;animation:fadeUp .3s ease;">
+  <div style="text-align:center;">
+    <div style="font-size:clamp(28px,9vw,36px);font-weight:900;">WYNIKI</div>
+    <div style="margin-top:4px;font-size:13px;color:rgba(242,243,247,.5);">po rundzie {{ roundNum }} z {{ totalRounds }}</div>
+  </div>
+  <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;">
+    <sc-for list="{{ scoreRows }}" as="r" hint-placeholder-count="4">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:{{ r.bg }};border:1.5px solid {{ r.bd }};">
+        <div style="width:28px;flex-shrink:0;text-align:center;font-size:15px;font-weight:900;color:{{ r.rankCol }};">{{ r.rank }}</div>
+        <div style="flex:1;font-size:16.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.name }}</div>
+        <sc-if value="{{ r.hasD }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:13px;font-weight:800;color:rgba(var(--acc-rgb),.85);">+{{ r.d }}</div>
+        </sc-if>
+        <div style="font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;">{{ r.pts }}</div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="margin-top:auto;padding-top:18px;display:flex;flex-direction:column;gap:10px;">
+    <button onClick="{{ nextOrPodium }}" style="width:100%;padding:19px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 0 28px rgba(var(--acc-rgb),.3);" style-active="transform:scale(.97);">{{ nextBtnLabel }}</button>
+    <sc-if value="{{ notLastRound }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ endGame }}" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(255,255,255,.04);color:rgba(242,243,247,.7);font-size:14px;font-weight:700;cursor:pointer;">Zakończ grę</button>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ scPodium }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Podium" style="flex:1;display:flex;flex-direction:column;animation:fadeUp .3s ease;position:relative;">
+  <div style="position:fixed;inset:0;pointer-events:none;overflow:hidden;">
+    <sc-for list="{{ conf }}" as="c" hint-placeholder-count="0">
+      <div style="position:absolute;top:-20px;left:{{ c.left }}%;width:{{ c.size }}px;height:{{ c.size }}px;background:{{ c.color }};border-radius:2px;animation:confFall {{ c.dur }}s linear {{ c.delay }}s infinite;opacity:.85;"></div>
+    </sc-for>
+  </div>
+  <div style="text-align:center;margin-top:10px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.22em;color:rgba(242,243,247,.5);">KONIEC PARTII</div>
+    <div style="margin-top:10px;font-size:clamp(30px,9vw,38px);font-weight:900;">Wygrywa <span style="color:var(--acc);text-shadow:0 0 30px rgba(var(--acc-rgb),.5);">{{ winnerName }}</span>!</div>
+  </div>
+  <div style="margin-top:30px;display:flex;align-items:flex-end;justify-content:center;gap:10px;">
+    <sc-for list="{{ podium }}" as="p" hint-placeholder-count="3">
+      <div style="flex:1;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div style="font-size:15px;font-weight:800;text-align:center;overflow-wrap:anywhere;">{{ p.name }}</div>
+        <div style="font-size:13px;font-weight:700;color:rgba(242,243,247,.55);">{{ p.pts }} pkt</div>
+        <div style="width:100%;height:{{ p.h }}px;border-radius:12px 12px 0 0;background:{{ p.bg }};border:1.5px solid {{ p.bd }};border-bottom:none;display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-size:22px;font-weight:900;color:{{ p.numCol }};">{{ p.place }}</div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="border-top:1.5px solid rgba(255,255,255,.14);"></div>
+  <sc-if value="{{ hasRest }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
+      <sc-for list="{{ restRows }}" as="r" hint-placeholder-count="2">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.04);">
+          <div style="width:24px;text-align:center;font-size:13px;font-weight:800;color:rgba(242,243,247,.5);">{{ r.rank }}</div>
+          <div style="flex:1;font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.name }}</div>
+          <div style="font-size:15px;font-weight:900;">{{ r.pts }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <div style="margin-top:auto;padding-top:20px;display:flex;flex-direction:column;gap:10px;">
+    <button onClick="{{ rematch }}" style="width:100%;padding:19px;border:none;border-radius:16px;background:var(--acc);color:#04141a;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 0 28px rgba(var(--acc-rgb),.3);" style-active="transform:scale(.97);">Rewanż — te same ustawienia</button>
+    <button onClick="{{ toSetup }}" style="width:100%;padding:15px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(255,255,255,.04);color:rgba(242,243,247,.75);font-size:15px;font-weight:700;cursor:pointer;">Nowa gra</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ rules }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:50;background:rgba(4,5,9,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="width:100%;max-width:380px;background:#14141f;border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:24px 22px;animation:popIn .22s ease;max-height:82vh;overflow-y:auto;">
+    <div style="font-size:22px;font-weight:900;">Jak grać?</div>
+    <ol style="margin:14px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:14.5px;line-height:1.45;color:rgba(242,243,247,.8);">
+      <li>Wszyscy poznają to samo tajne hasło — <b style="color:var(--acc2);">oprócz impostora</b>.</li>
+      <li>Podawajcie telefon: każdy w tajemnicy sprawdza swoją rolę, przytrzymując kartę.</li>
+      <li>Po kolei mówcie na głos <b>po jednym skojarzeniu</b> z hasłem. Impostor blefuje!</li>
+      <li>Po okrążeniach — dyskusja i głosowanie, kto ściemnia.</li>
+      <li>Wykryty impostor ma <b style="color:var(--acc);">ostatnią szansę</b>: jeśli odgadnie hasło z 8 kart, kradnie rundę.</li>
+    </ol>
+    <button onClick="{{ closeRules }}" style="margin-top:20px;width:100%;padding:16px;border:none;border-radius:14px;background:var(--acc);color:#04141a;font-size:16px;font-weight:800;cursor:pointer;">Jasne!</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ ageGate }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:60;background:rgba(4,5,9,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="width:100%;max-width:380px;background:#14141f;border:1.5px solid rgba(var(--acc2-rgb),.5);border-radius:22px;padding:24px 22px;animation:popIn .22s ease;">
+    <div style="font-size:13px;font-weight:800;letter-spacing:.16em;color:var(--acc2);">TRYB 18+</div>
+    <div style="margin-top:10px;font-size:17px;font-weight:700;line-height:1.45;">Ten tryb zawiera pikantne i wulgarne hasła. Czy wszyscy gracze mają ukończone 18 lat?</div>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+      <button onClick="{{ ageYes }}" style="width:100%;padding:17px;border:none;border-radius:14px;background:var(--acc2);color:#1c1002;font-size:16px;font-weight:800;cursor:pointer;" style-active="transform:scale(.97);">Tak, gramy</button>
+      <button onClick="{{ ageNo }}" style="width:100%;padding:15px;border:1px solid rgba(255,255,255,.16);border-radius:14px;background:rgba(255,255,255,.05);color:#f2f3f7;font-size:15px;font-weight:700;cursor:pointer;">Wróć</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:880},&quot;palette&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:[&quot;#00e5ff&quot;,&quot;#ff9f1c&quot;],&quot;tsType&quot;:&quot;string[]&quot;,&quot;options&quot;:[[&quot;#00e5ff&quot;,&quot;#ff9f1c&quot;],[&quot;#ff2d78&quot;,&quot;#00e5ff&quot;],[&quot;#a3ff12&quot;,&quot;#ff2d78&quot;],[&quot;#c084fc&quot;,&quot;#ffd166&quot;]],&quot;section&quot;:&quot;Wygląd&quot;},&quot;vibrations&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Rozgrywka&quot;}}">
+const WORDS_FAMILY = [
+{id:'zwierzeta',name:'Zwierzęta',words:[
+["żyrafa","struś"],["pingwin","foka"],["jeż","kret"],["słoń","mamut"],["kot","pies"],
+["chomik","świnka morska"],["papuga","kanarek"],["rekin","delfin"],["żółw","ślimak"],["lew","tygrys"],
+["wilk","lis"],["niedźwiedź","łoś"],["koń","osioł"],["krowa","koza"],["kura","kaczka"],
+["sowa","nietoperz"],["pszczoła","osa"],["komar","mucha"],["pająk","skorpion"],["wąż","jaszczurka"],
+["żaba","ropucha"],["bocian","żuraw"],["wiewiórka","szop pracz"],["mrówka","żuk"],["motyl","ćma"],
+["orzeł","sokół"],["flaming","paw"],["wielbłąd","lama"],["kangur","koala"],["małpa","goryl"],
+["krokodyl","aligator"],["hipopotam","nosorożec"],["zebra","antylopa"],["panda","leniwiec"],["jednorożec","pegaz"],
+["dinozaur","smok"],["złota rybka","karp"],["homar","krab"],["ośmiornica","meduza"],["jamnik","mops"]]},
+{id:'jedzenie',name:'Jedzenie',words:[
+["pierogi","uszka"],["pizza hawajska","zapiekanka"],["żurek","barszcz biały"],["kebab","gyros"],["schabowy","kotlet mielony"],
+["bigos","kapuśniak"],["rosół","krupnik"],["naleśniki","racuchy"],["placki ziemniaczane","pyzy"],["spaghetti","lasagne"],
+["sushi","ramen"],["hamburger","hot dog"],["frytki","chipsy"],["lody","sorbet"],["sernik","szarlotka"],
+["pączek","drożdżówka"],["gofry","churros"],["czekolada","krem czekoladowy"],["żelki","guma do żucia"],["popcorn","nachosy"],
+["ogórek kiszony","kapusta kiszona"],["śledź","szprotki"],["parówki","kiełbasa"],["kaszanka","pasztet"],["golonka","żeberka"],
+["oscypek","ser żółty"],["zupa pomidorowa","ogórkowa"],["kawa","herbata"],["kompot","lemoniada"],["oranżada","cola"],
+["mleko","kefir"],["jajecznica","omlet"],["owsianka","musli"],["kanapka","tost"],["banan","mango"],
+["truskawki","maliny"],["arbuz","melon"],["winogrona","rodzynki"],["miód","dżem"],["ketchup","musztarda"]]},
+{id:'sport',name:'Sport i ruch',words:[
+["skok w dal","skok wzwyż"],["joga","pilates"],["bramkarz","napastnik"],["maraton","sprint"],["siatkówka","koszykówka"],
+["piłka nożna","piłka ręczna"],["tenis","badminton"],["ping-pong","squash"],["pływanie","nurkowanie"],["narty","snowboard"],
+["łyżwy","wrotki"],["hulajnoga","deskorolka"],["rower","tandem"],["siłownia","crossfit"],["pompki","przysiady"],
+["brzuszki","deska"],["boks","karate"],["judo","zapasy"],["szermierka","łucznictwo"],["wspinaczka","alpinizm"],
+["bieganie","nordic walking"],["skakanka","hula-hop"],["trampolina","dmuchany zamek"],["kręgle","bilard"],["rzutki","bule"],
+["szachy","warcaby"],["jazda konna","rodeo"],["formuła 1","żużel"],["skoki narciarskie","biegi narciarskie"],["hokej","curling"],
+["golf","minigolf"],["surfing","kitesurfing"],["kajakarstwo","wioślarstwo"],["żeglarstwo","windsurfing"],["wędkarstwo","grzybobranie"],
+["taniec towarzyski","balet"],["zumba","aerobik"],["cheerleaderki","gimnastyka artystyczna"],["sumo","przeciąganie liny"],["parkour","akrobatyka"]]},
+{id:'zawody',name:'Zawody',words:[
+["strażak","policjant"],["fryzjer","barber"],["youtuber","influencer"],["lekarz","weterynarz"],["dentysta","ortodonta"],
+["nauczyciel","przedszkolanka"],["kucharz","cukiernik"],["kelner","barman"],["pilot samolotu","stewardesa"],["kierowca autobusu","taksówkarz"],
+["listonosz","kurier"],["rolnik","ogrodnik"],["górnik","hutnik"],["hydraulik","elektryk"],["mechanik","wulkanizator"],
+["programista","grafik"],["księgowy","bankier"],["adwokat","notariusz"],["aktor","kaskader"],["piosenkarz","raper"],
+["malarz","rzeźbiarz"],["fotograf","kamerzysta"],["dziennikarz","prezenter pogody"],["astronauta","astronom"],["naukowiec","wynalazca"],
+["archeolog","paleontolog"],["detektyw","szpieg"],["ochroniarz","wykidajło"],["żołnierz","komandos"],["ksiądz","zakonnica"],
+["psycholog","psychiatra"],["wróżka","jasnowidz"],["masażysta","fizjoterapeuta"],["trener personalny","dietetyk"],["modelka","stylistka"],
+["sprzątaczka","pokojówka"],["kominiarz","dekarz"],["rzeźnik","piekarz"],["bibliotekarz","archiwista"],["klaun","iluzjonista"]]},
+{id:'miejsca',name:'Miejsca',words:[
+["plaża","basen"],["Wawel","Malbork"],["poczekalnia u dentysty","urząd skarbowy"],["kino","teatr"],["galeria handlowa","bazar"],
+["biblioteka","księgarnia"],["kościół","cmentarz"],["szpital","przychodnia"],["szkoła","przedszkole"],["las","park"],
+["góry","morze"],["pustynia","dżungla"],["zoo","cyrk"],["wesołe miasteczko","park wodny"],["stadion","hala sportowa"],
+["lotnisko","dworzec PKP"],["przystanek autobusowy","peron"],["stacja benzynowa","myjnia samochodowa"],["Żabka","Biedronka"],["restauracja","stołówka"],
+["kawiarnia","cukiernia"],["pizzeria","smażalnia ryb"],["muzeum","galeria sztuki"],["planetarium","obserwatorium"],["escape room","paintball"],
+["kręgielnia","sala zabaw"],["sauna","jacuzzi"],["solarium","salon tatuażu"],["komisariat","sąd"],["więzienie","bunkier"],
+["zamek","pałac"],["wieża Eiffla","Statua Wolności"],["Bałtyk","Mazury"],["Zakopane","Sopot"],["działka","kemping"],
+["strych","piwnica"],["winda","schody ruchome"],["toaleta publiczna","przebieralnia"],["sala weselna","remiza"],["plac zabaw","piaskownica"]]},
+{id:'filmy',name:'Filmy i bajki',words:[
+["Shrek","Fiona"],["Harry Potter","Władca Pierścieni"],["Smerfy","Minionki"],["Batman","Superman"],["Spider-Man","Iron Man"],
+["Kraina Lodu","Vaiana"],["Król Lew","Madagaskar"],["Toy Story","Epoka Lodowcowa"],["Kubuś Puchatek","Miś Uszatek"],["Bolek i Lolek","Reksio"],
+["Kot w Butach","Garfield"],["Scooby-Doo","Psi Patrol"],["SpongeBob","Świnka Peppa"],["Pokemon","Dragon Ball"],["Gwiezdne Wojny","Star Trek"],
+["Kevin sam w domu","Grinch"],["Titanic","Dirty Dancing"],["Rocky","Rambo"],["James Bond","Mission Impossible"],["Piraci z Karaibów","Indiana Jones"],
+["Park Jurajski","Godzilla"],["Matrix","Incepcja"],["Avatar","Diuna"],["Terminator","RoboCop"],["Szybcy i wściekli","Taxi"],
+["Gladiator","Troja"],["Kiler","Chłopaki nie płaczą"],["Sami swoi","Kogel-mogel"],["Świat według Kiepskich","Ranczo"],["Gra o tron","Wikingowie"],
+["Stranger Things","Wednesday"],["Squid Game","Dom z papieru"],["Przyjaciele","Teoria wielkiego podrywu"],["Myszka Miki","Kaczor Donald"],["Tom i Jerry","Zwariowane melodie"],
+["Wiedźmin","Hobbit"],["E.T.","Obcy"],["Rejs","Miś"],["Deadpool","Wolverine"],["Barbie","Oppenheimer"]]},
+{id:'dom',name:'Dom i codzienność',words:[
+["odkurzacz","mop"],["poniedziałek","budzik"],["korek na drodze","kolejka do kasy"],["pranie","prasowanie"],["zmywarka","zlew"],
+["lodówka","zamrażarka"],["mikrofalówka","piekarnik"],["czajnik","ekspres do kawy"],["pilot od telewizora","ładowarka"],["kanapa","fotel"],
+["koc","poduszka"],["kapcie","piżama"],["szlafrok","ręcznik"],["szczoteczka do zębów","nić dentystyczna"],["prysznic","wanna"],
+["papier toaletowy","chusteczki"],["kosz na śmieci","segregacja śmieci"],["rachunki","podatki"],["zakupy spożywcze","lista zakupów"],["paragon","promocja"],
+["sąsiad z wiertarką","pies sąsiada"],["młotek","śrubokręt"],["drabina","taboret"],["żarówka","świeczka"],["gniazdko","przedłużacz"],
+["wi-fi","router"],["telefon","tablet"],["telewizor","radio"],["doniczka","konewka"],["firanki","rolety"],
+["dywan","panele"],["klucze","portfel"],["parasol","kalosze"],["apteczka","termometr"],["drzemka","sjesta"],
+["niedziela u babci","święta u rodziny"],["remont","przeprowadzka"],["kurz","pajęczyna"],["skarpetki nie do pary","plątanina kabli"],["weekend","urlop"]]},
+{id:'podroze',name:'Podróże',words:[
+["walizka","plecak"],["all inclusive","last minute"],["zgubiony bagaż","opóźniony lot"],["paszport","dowód osobisty"],["odprawa","kontrola bezpieczeństwa"],
+["bilet","rezerwacja"],["hotel","hostel"],["namiot","przyczepa kempingowa"],["mapa","GPS"],["przewodnik","pilot wycieczki"],
+["zwiedzanie","leżenie na plaży"],["pamiątki","magnesy na lodówkę"],["selfie z zabytkiem","zdjęcie jedzenia"],["autostop","pociąg nocny"],["rejs","prom"],
+["safari","trekking"],["wycieczka autokarowa","kolonie"],["Giewont","Rysy"],["Chorwacja","Grecja"],["Egipt","Turcja"],
+["Paryż","Rzym"],["Londyn","Nowy Jork"],["Majorka","Ibiza"],["city break","weekend w spa"],["pakowanie na ostatnią chwilę","nadbagaż"],
+["strefa czasowa","jet lag"],["opalanie","krem z filtrem"],["klapki","okulary przeciwsłoneczne"],["strój kąpielowy","ręcznik plażowy"],["leżak","parasol plażowy"],
+["gofry nad morzem","ryba z frytkami"],["deptak","molo"],["latarnia morska","port"],["muszelki","bursztyn"],["szlak górski","schronisko"],
+["Kasprowy Wierch","Morskie Oko"],["wiza","szczepienia"],["kantor","bankomat"],["taksówka z lotniska","Uber"],["pocztówka","pamiątkowy kubek"]]}
+];
+const WORDS_ADULT = [
+{id:'flirt',name:'Flirt i seks',words:[
+["szybki numerek","poranny seks"],["jednonocna przygoda","wakacyjny romans"],["gra wstępna","masaż erotyczny"],["sexting","nagie zdjęcie"],["striptiz","taniec na rurze"],
+["pocałunek z języczkiem","malinka"],["przyjaciele z korzyściami","romans w pracy"],["seks w samochodzie","seks na plaży"],["orgazm","udawany orgazm"],["pozycja jeźdźca","pozycja misjonarska"],
+["69","doggy style"],["dirty talk","jęczenie"],["seks oralny","robienie loda"],["masturbacja","filmy dla dorosłych"],["napalenie","zimny prysznic"],
+["poranny wzwód","mokry sen"],["prezerwatywa","kalendarzyk"],["stosunek przerywany","wpadka"],["trójkąt","orgia"],["swingersi","nudyści"],
+["fetysz stóp","skarpetki w łóżku"],["skok w bok","zdrada"],["kochanka","ta trzecia"],["libido","testosteron"],["punkt G","łechtaczka"],
+["rozmiar ma znaczenie","liczy się technika"],["gorąca linia","czat dla dorosłych"],["rozbierany poker","gra w butelkę"],["głęboki dekolt","krótka spódniczka"],["całowanie po szyi","gryzienie ucha"],
+["seks po pijaku","seks na kacu"],["seks w pracy","seks w windzie"],["erotyczny sen","sen o byłej"],["sutki","piercing intymny"],["depilacja bikini","zarost na klacie"],
+["pierwszy raz","seks po ślubie"],["skrzypiące łóżko","cienkie ściany"],["seks przy zgaszonym świetle","seks przy świecach"],["afrodyzjak","ostrygi"],["viagra","żeń-szeń"]]},
+{id:'sypialnia',name:'Sypialnia',words:[
+["wibrator","króliczek"],["kajdanki","opaska na oczy"],["bielizna erotyczna","stringi"],["kamasutra","joga"],["pejcz","szpicruta"],
+["lateks","skórzany strój"],["gadżety erotyczne","sex shop"],["lubrykant","olejek do masażu"],["kostium pielęgniarki","kostium pokojówki"],["podwiązki","pończochy"],
+["gorset","body"],["jedwabna pościel","świece zapachowe"],["lustro na suficie","okrągłe łóżko"],["klapsy","pociąganie za włosy"],["dominacja","uległość"],
+["odgrywanie ról","przebieranki"],["bezpieczne słowo","hasło do wi-fi"],["wieczór panieński","wieczór kawalerski"],["striptizer","striptizerka"],["taniec erotyczny","taniec brzucha"],
+["przyciemnione światło","czerwona żarówka"],["playlista do seksu","saksofon"],["szeptanie do ucha","oddech na karku"],["masaż tantryczny","masaż happy end"],["prezerwatywy smakowe","jadalna bielizna"],
+["bita śmietana","sos czekoladowy"],["truskawki i szampan","śniadanie do łóżka"],["jajeczko z pilotem","zabawka sterowana aplikacją"],["korek analny","kulki gejszy"],["nagie selfie","zdjęcie w ręczniku"],
+["maraton w łóżku","przerwa na pizzę"],["kości erotyczne","karty z pozycjami"],["prysznic we dwoje","wspólna kąpiel"],["rozrzucone ubrania","urwane guziki"],["zasłonięte okna","drzwi zamknięte na klucz"],
+["\u201enie dziś, boli mnie głowa\u201d","\u201ejestem zmęczony\u201d"],["połamane łóżko","ślady na plecach"],["zadrapania","ugryzienia"],["hotel na godziny","pokój z jacuzzi"],["sekretna szuflada","pudełko pod łóżkiem"]]},
+{id:'randki',name:'Randki i podryw',words:[
+["Tinder","Badoo"],["ghosting","friendzone"],["randka w ciemno","speed dating"],["sugar daddy","sponsor"],["walk of shame","powrót o świcie"],
+["podryw na siłowni","podryw w klubie"],["tekst na podryw","\u201eskądś cię znam\u201d"],["pierwsza randka","spotkanie z rodzicami"],["kolacja przy świecach","Netflix i chill"],["pisanie do byłej","stalkowanie eks na Insta"],
+["swipe w prawo","superlajk"],["catfishing","filtry na zdjęciach"],["love bombing","miłość od pierwszego wejrzenia"],["czerwone flagi","zielone flagi"],["situationship","\u201eto skomplikowane\u201d"],
+["flirt z barmanem","napiwek z numerem telefonu"],["numer na serwetce","DM na Instagramie"],["podryw na psa","podryw na gitarę"],["\u201eu mnie czy u ciebie?\u201d","\u201epokażę ci kolekcję winyli\u201d"],["zasada trzeciej randki","całowanie na pierwszej randce"],
+["dzielenie rachunku","kto płaci za kolację"],["spóźnienie na randkę","odwołanie w ostatniej chwili"],["randka z koszmaru","ucieczka przez okno w toalecie"],["piąte koło u wozu","przyzwoitka"],["seryjny randkowicz","wieczny kawaler"],
+["SMS \u201eśpisz?\u201d","\u201eco robisz?\u201d o północy"],["zazdrość o lajki","sprawdzanie obserwujących"],["oficjalny status","\u201eto nic poważnego\u201d"],["pierwszy pocałunek","niezręczny uścisk"],["crush na baristę","flirt z kurierem"],
+["randka w McDonaldzie","romantyczny kebab"],["wspólne zdjęcie profilowe","ogłoszenie związku na fejsie"],["rocznica","walentynki"],["bukiet róż","pluszowy miś"],["serenada pod oknem","wiersz miłosny"],
+["podwójna randka","swatanie przez znajomych"],["miłość z odzysku","powrót do eks"],["toksyczny związek","związek on-off"],["wysyłanie serduszek","lajk na starym zdjęciu"],["oświadczyny w restauracji","ślub w Vegas"]]},
+{id:'melanz',name:'Melanż i używki',words:[
+["kac gigant","kac moralny"],["shoty","tequila z solą"],["urwany film","\u201ejak ja wróciłem do domu?\u201d"],["zgon na kanapie","spanie w wannie"],["melanż do rana","nieplanowana domówka"],
+["before","wyjście na jednego"],["zimne piwko","ciepła wódka"],["jägerbomb","wódka z energetykiem"],["beer pong","flanki"],["wznoszenie toastu","przemowa wujka na weselu"],
+["drink z palemką","piña colada"],["wino w kartonie","najtańsze wino z Żabki"],["bimber","nalewka babci"],["kufel piwa","lampka wina"],["degustacja wina","wąchanie korka"],
+["szlugi pod klubem","dymek na balkonie"],["vape","fajka wodna"],["zioło","skręt"],["szampan","prosecco"],["otwieranie piwa zapalniczką","otwieranie zębami"],
+["karaoke po pijaku","śpiewanie w taksówce"],["prośby do DJ-a","\u201epuść coś z Disco Polo\u201d"],["procenty","promile"],["kontrola trzeźwości","dmuchanie w alkomat"],["taxi o 4 rano","nocny autobus"],
+["kebab o 3 w nocy","zapiekanka po imprezie"],["jajecznica na kacu","rosołek ratunkowy"],["sok z kiszonych ogórków","elektrolity"],["\u201eostatni i idziemy\u201d","\u201ejeszcze jedna kolejka\u201d"],["dzwonienie po pijaku","pijackie SMS-y"],
+["zgubiony telefon","zgubione klucze"],["przewrotka na parkiecie","taniec z krzesłem"],["barman zna cię po imieniu","stały bywalec"],["happy hours","dwa w cenie jednego"],["selekcjoner pod klubem","lista VIP"],
+["szatnia w klubie","zgubiony numerek"],["impreza w plenerze","domówka"],["sylwester","andrzejki"],["wesele","poprawiny"],["\u201enigdy więcej alkoholu\u201d","\u201eod poniedziałku nie piję\u201d"]]},
+{id:'wstyd',name:'Wstyd i wpadki',words:[
+["SMS do byłej o 3 w nocy","telefon do eks po winie"],["taniec na stole","upadek ze stołu"],["wpadka przy teściach","przypał na rodzinnym obiedzie"],["rozpięty rozporek","szpinak w zębach"],["pomylenie imion w łóżku","nazwanie szefa \u201emamo\u201d"],
+["pierdnięcie na jodze","beknięcie na randce"],["wiadomość do złej osoby","screenshot wysłany do osoby ze screenshota"],["lajk podczas stalkowania","konto do podglądania"],["papier toaletowy u buta","sweter na lewą stronę"],["pomachanie do nieznajomego","piątka w pustkę"],
+["potknięcie na oczach tłumu","udawany podbieg"],["\u201etobie też smacznego\u201d do kelnera","\u201ewzajemnie\u201d do kasjerki"],["chrapanie na spotkaniu","zaśnięcie w kinie"],["odsłuchanie własnego głosu","nagranie wysłane za wcześnie"],["pomylenie sal","wejście na złe zebranie na Zoomie"],
+["niewyciszony mikrofon","kamerka włączona za wcześnie"],["przeproszenie manekina","rozmowa z automatem"],["pchanie drzwi \u201eciągnij\u201d","ciągnięcie drzwi \u201epchaj\u201d"],["pęknięte spodnie w kroku","dziura w skarpecie u znajomych"],["zapomniany portfel na randce","odrzucona karta przy kolacji"],
+["bąk w windzie","czkawka na pogrzebie"],["śpiewanie złego tekstu","fałszowanie na karaoke"],["\u201eto który miesiąc?\u201d","niezręczne gratulacje"],["CV z literówką","mail podpisany \u201ecałuję\u201d"],["\u201ekocham cię\u201d za wcześnie","\u201ekocham cię\u201d do kumpla"],
+["wyjście z domu w kapciach","piżama w Biedronce"],["mokra plama na spodniach","\u201eto tylko woda!\u201d"],["zapomniane życzenia","\u201esto lat\u201d nie w tym momencie"],["telefon w kościele","dzwonek w teatrze"],["niezręczne przywitanie","pocałunek w powietrze"],
+["dwa razy \u201ecześć\u201d do tej samej osoby","przedstawianie się znajomemu"],["zgubiony wątek opowieści","pointa, która nie siadła"],["śmiech w złym momencie","parsknięcie na minucie ciszy"],["cebula przed randką","czosnkowy oddech"],["pot pod pachami","mokry uścisk dłoni"],
+["wejście w szybę","machanie do własnego odbicia"],["autokorekta w najgorszym momencie","dyktowanie głosowe w tramwaju"],["oczko w rajstopach","guzik, który odpadł"],["śpiewanie na głos w słuchawkach","za głośna muzyka w słuchawkach"],["zapomniany PIN przy kasie","płacenie drobniakami w kolejce"]]},
+{id:'slownik',name:'Mocny słownik',words:[
+["kurwa","cholera jasna"],["chuj","fiut"],["dupa","tyłek"],["zajebiście","mega"],["pierdolić","pieprzyć"],
+["spierdalaj","spadaj"],["jebnięty","walnięty"],["cipka","muszelka"],["cycki","balony"],["dupek","palant"],
+["skurwysyn","sukinsyn"],["gówno","kupa"],["zesrać się ze śmiechu","posikać się ze śmiechu"],["wkurwiony","wściekły"],["ochujeć","zbaranieć"],
+["przypał","obciach"],["beka","heheszki"],["dzban","leszcz"],["laska","ciacho"],["zaliczyć","przelecieć"],
+["ruchać","bzykać"],["obciąganie","dmuchanie"],["walić konia","trzepać kapucyna"],["kutas","wacek"],["jaja","klejnoty rodowe"],
+["napalony","nagrzany"],["dymanko","łóżkowe akrobacje"],["gołe baby","świerszczyki"],["burdel","bajzel"],["kurwiki w oczach","diabelski uśmiech"],
+["zjebać","spartaczyć"],["najebany","nawalony"],["zryty beret","odklejka"],["mieć wyjebane","mieć gdzieś"],["pocałuj mnie w dupę","wypchaj się"],
+["gówniana robota","czarna robota"],["jebut","łubudu"],["do dupy","do kitu"],["sranie w banię","mydlenie oczu"],["chujnia","lipa"]]}
+];
+
+class Component extends DCLogic {
+  state = {
+    screen:'start', rules:false, ageGate:false, loaded:false,
+    names:[], nameInput:'', err:'',
+    imps:1, mode:'family', adultOk:false,
+    catsFam:['zwierzeta','jedzenie','sport','zawody','miejsca','filmy','dom','podroze'],
+    catsAd:['flirt','sypialnia','randki','melanz','wstyd','slownik'],
+    adv:false, hintCat:true, twin:false, timer:0, laps:2, voting:'secret', totalRounds:5,
+    round:0, scores:[], lastDelta:[],
+    word:'', impWord:'', catName:'', catId:'',
+    impSet:[], order:[], ri:0, holding:false, seen:false,
+    lap:1, sp:0, discuss:false, tleft:0,
+    votes:[], vi:0, cands:null, runoff:0, lastVotes:null,
+    accused:-1, revealed:false, caught:false, aloudSel:[],
+    chance:[], chancePick:'', chanceDone:false, stolen:false,
+    resTitle:'', resSub:'', resGood:false, resPts:[], correctVoters:[]
+  };
+  DB = null; deckStore = {}; confs = null;
+  componentDidMount(){
+    this.DB = {family:WORDS_FAMILY, adult:WORDS_ADULT}; this.setState({loaded:true});
+    this.iv = setInterval(() => { const s=this.state; if(s.screen==='round' && !s.discuss && s.timer>0 && s.tleft>0) this.setState({tleft:s.tleft-1}); }, 1000);
+    this.applyPalette();
+  }
+  componentDidUpdate(){ this.applyPalette(); }
+  componentWillUnmount(){ clearInterval(this.iv); clearTimeout(this.holdT); }
+  applyPalette(){
+    const d=['#00e5ff','#ff9f1c'];
+    const p=Array.isArray(this.props.palette)&&this.props.palette.length>=2?this.props.palette:d;
+    const key=p.join(); if(this._pal===key) return; this._pal=key;
+    const rgb=h=>{const n=parseInt(h.slice(1,7),16);return (n>>16&255)+','+(n>>8&255)+','+(n&255);};
+    const r=document.documentElement.style;
+    r.setProperty('--acc',p[0]); r.setProperty('--acc2',p[1]);
+    r.setProperty('--acc-rgb',rgb(p[0])); r.setProperty('--acc2-rgb',rgb(p[1]));
+  }
+  vib(pat){ if((this.props.vibrations ?? true) && navigator.vibrate){ try{ navigator.vibrate(pat); }catch(e){} } }
+  shuffle(a){ const x=a.slice(); for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
+  cats(){ return this.DB ? (this.state.mode==='family'?this.DB.family:this.DB.adult) : []; }
+  selCats(){ return this.state.mode==='family'?this.state.catsFam:this.state.catsAd; }
+  maxImps(n){ n=n??this.state.names.length; return Math.max(1, Math.ceil(n/2)-1); }
+  removePlayer(i){ this.setState(s=>{ const names=s.names.filter((_,j)=>j!==i); return {names, imps:Math.min(s.imps,this.maxImps(names.length)), err:''}; }); }
+  nextRound(){
+    const s=this.state;
+    const pool=this.cats().filter(c=>this.selCats().includes(c.id));
+    const cat=pool[Math.floor(Math.random()*pool.length)];
+    let deck=this.deckStore[cat.id];
+    if(!deck || !deck.length) deck=this.shuffle(cat.words.map((_,i)=>i));
+    const pi=deck.pop(); this.deckStore[cat.id]=deck;
+    const pair=cat.words[pi]; const flip=Math.random()<.5;
+    this.setState({
+      round:s.round+1, word:pair[flip?1:0], impWord:pair[flip?0:1], catName:cat.name, catId:cat.id,
+      impSet:this.shuffle(s.names.map((_,i)=>i)).slice(0,s.imps),
+      order:this.shuffle(s.names.map((_,i)=>i)),
+      ri:0, holding:false, seen:false, lap:1, sp:0, discuss:false, tleft:s.timer,
+      votes:[], vi:0, cands:null, runoff:0, lastVotes:null,
+      accused:-1, revealed:false, caught:false, aloudSel:[],
+      chance:[], chancePick:'', chanceDone:false, stolen:false,
+      resTitle:'', resSub:'', resGood:false, resPts:[], correctVoters:[],
+      lastDelta:s.names.map(()=>0), screen:'pass'
+    });
+  }
+  finishSecret(votes){
+    const counts={}; votes.forEach(v=>{ if(v>=0) counts[v]=(counts[v]||0)+1; });
+    let mx=0; Object.keys(counts).forEach(k=>{ if(counts[k]>mx) mx=counts[k]; });
+    const winners=Object.keys(counts).filter(k=>counts[k]===mx).map(Number);
+    if(winners.length===1) this.accuse(winners[0], votes); else this.handleTie(winners);
+  }
+  handleTie(winners){
+    const s=this.state;
+    if(s.runoff>=1){ this.applyImpWin('IMPOSTOR WYGRYWA RUNDĘ','Podwójny remis — impostor przetrwał głosowanie.', false); return; }
+    if(s.voting==='secret') this.setState({runoff:1, cands:winners, votes:s.names.map(()=>-1), vi:0, screen:'votepass'});
+    else this.setState({runoff:1, cands:winners, aloudSel:[], screen:'aloud'});
+  }
+  accuse(a, votes){
+    this.setState({accused:a, caught:this.state.impSet.includes(a), lastVotes:votes||null, revealed:false, screen:'verdict'});
+  }
+  buildChance(){
+    const s=this.state;
+    const cat=this.cats().find(c=>c.id===s.catId);
+    const others=[]; cat.words.forEach(p=>{ p.forEach(w=>{ if(w!==s.word && w!==s.impWord && others.indexOf(w)<0) others.push(w); }); });
+    const chance=this.shuffle([s.word, ...this.shuffle(others).slice(0,7)]);
+    this.setState({chance, chancePick:'', chanceDone:false, stolen:false, screen:'chance'});
+  }
+  pickChance(w){
+    if(this.state.chanceDone) return;
+    const stolen = w===this.state.word;
+    this.vib(stolen?[60,60,160]:[220]);
+    this.setState({chancePick:w, chanceDone:true, stolen}, ()=>{
+      if(stolen) this.applyImpWin('IMPOSTOR UKRADŁ RUNDĘ','Odgadł hasło w ostatniej szansie!', true);
+      else this.applyCrewWin();
+    });
+  }
+  applyImpWin(title, sub, stay){
+    const s=this.state; const delta=s.names.map(()=>0);
+    s.impSet.forEach(i=>{ delta[i]+=3; });
+    this.setState({
+      scores:s.scores.map((v,i)=>v+delta[i]), lastDelta:delta,
+      resTitle:title, resSub:sub, resGood:false, resPts:this.deltaList(delta),
+      correctVoters:[], screen: stay ? s.screen : 'summary'
+    });
+  }
+  applyCrewWin(){
+    const s=this.state; const delta=s.names.map(()=>0); const correct=[];
+    if(s.voting==='secret' && s.lastVotes){
+      s.names.forEach((n,i)=>{ if(!s.impSet.includes(i) && s.lastVotes[i]===s.accused){ delta[i]+=2; correct.push(n); } });
+    } else {
+      s.names.forEach((n,i)=>{ if(!s.impSet.includes(i)) delta[i]+=1; });
+    }
+    this.setState({
+      scores:s.scores.map((v,i)=>v+delta[i]), lastDelta:delta,
+      resTitle:'ZAŁOGA WYGRYWA RUNDĘ', resSub:'Impostor wykryty — ostatnia szansa spalona.', resGood:true,
+      resPts:this.deltaList(delta), correctVoters:correct
+    });
+  }
+  deltaList(delta){ return this.state.names.map((n,i)=>({name:n, d:delta[i]})).filter(x=>x.d>0).sort((a,b)=>b.d-a.d); }
+  optRow(list, cur, set){
+    return list.map(o=>({ label:o.l, pick:()=>set(o.v),
+      bd: o.v===cur ? 'rgba(var(--acc-rgb),.7)' : 'rgba(255,255,255,.14)',
+      bg: o.v===cur ? 'rgba(var(--acc-rgb),.14)' : 'rgba(255,255,255,.03)',
+      col: o.v===cur ? 'var(--acc)' : 'rgba(242,243,247,.75)' }));
+  }
+  renderVals(){
+    const s=this.state; const n=s.names.length;
+    const U=w=>(w||'').toLocaleUpperCase('pl-PL');
+    const idxAll=s.names.map((_,i)=>i);
+    const scr=s.screen;
+    if(!this.confs){ this.confs=[]; for(let i=0;i<30;i++){ this.confs.push({ left:(i*37+11)%100, size:6+(i%4)*2, dur:(3+(i%5)*0.5).toFixed(1), delay:((i%10)*0.33).toFixed(2), color:['var(--acc)','var(--acc2)','#ffffff'][i%3] }); } }
+    const sorted=s.names.map((nm,i)=>({name:nm, pts:s.scores[i]||0, d:(s.lastDelta[i]||0), i})).sort((a,b)=>b.pts-a.pts);
+    const top3=sorted.slice(0,3);
+    const podArr=[];
+    if(top3[1]) podArr.push({...top3[1], place:2, h:86, bg:'rgba(255,255,255,.06)', bd:'rgba(255,255,255,.18)', numCol:'rgba(242,243,247,.7)'});
+    if(top3[0]) podArr.push({...top3[0], place:1, h:124, bg:'rgba(var(--acc-rgb),.14)', bd:'rgba(var(--acc-rgb),.6)', numCol:'var(--acc)'});
+    if(top3[2]) podArr.push({...top3[2], place:3, h:62, bg:'rgba(255,255,255,.04)', bd:'rgba(255,255,255,.14)', numCol:'rgba(242,243,247,.55)'});
+    const isImpCard=s.impSet.includes(s.ri);
+    const cardIsImp = scr==='card' && isImpCard && !s.twin;
+    const cardWord = U(isImpCard && s.twin ? s.impWord : s.word);
+    const lastSpeak = s.lap===s.laps && s.sp===s.order.length-1;
+    const selCats=this.selCats(); const catList=this.cats();
+    const allSel = catList.length>0 && selCats.length===catList.length;
+    return {
+      noCtx:e=>{ e.preventDefault(); return false; },
+      scStart:scr==='start', scSetup:scr==='setup', scPass:scr==='pass', scCard:scr==='card',
+      scRound:scr==='round', scVotePass:scr==='votepass', scVote:scr==='vote', scAloud:scr==='aloud',
+      scVerdict:scr==='verdict', scChance:scr==='chance', scSummary:scr==='summary', scScores:scr==='scores', scPodium:scr==='podium',
+      rules:s.rules, ageGate:s.ageGate,
+      openRules:()=>this.setState({rules:true}), closeRules:()=>this.setState({rules:false}),
+      goSetup:()=>this.setState({screen:'setup', err:''}), backStart:()=>this.setState({screen:'start'}),
+      playersCount:n,
+      playerChips:s.names.map((nm,i)=>({name:nm, rm:()=>this.removePlayer(i)})),
+      nameInput:s.nameInput,
+      onName:e=>this.setState({nameInput:e.target.value}),
+      nameKey:e=>{ if(e.key==='Enter'){ e.preventDefault(); this.addP(); } },
+      addPlayer:()=>this.addP(),
+      imps:s.imps,
+      decImp:()=>this.setState({imps:Math.max(1,s.imps-1)}),
+      incImp:()=>this.setState({imps:Math.min(this.maxImps(),s.imps+1)}),
+      impHintLine: n<3 ? 'Impostorów zawsze mniej niż połowa graczy.' : ('Sugestia dla '+n+' graczy: '+(n<=5?'1':(n<=8?'1–2':'2–3'))+' · maks. '+this.maxImps()),
+      famBd: s.mode==='family'?'rgba(var(--acc-rgb),.7)':'rgba(255,255,255,.12)',
+      famBg: s.mode==='family'?'rgba(var(--acc-rgb),.12)':'#14141f',
+      adBd: s.mode==='adult'?'rgba(var(--acc2-rgb),.7)':'rgba(255,255,255,.12)',
+      adBg: s.mode==='adult'?'rgba(var(--acc2-rgb),.1)':'#14141f',
+      adultSub: s.adultOk ? 'odblokowany' : 'pikantne hasła',
+      catChips:catList.map(c=>({ name:c.name, toggle:()=>this.toggleCat(c.id),
+        bd:selCats.includes(c.id)?'rgba(var(--acc-rgb),.7)':'rgba(255,255,255,.14)',
+        bg:selCats.includes(c.id)?'rgba(var(--acc-rgb),.14)':'rgba(255,255,255,.03)',
+        col:selCats.includes(c.id)?'var(--acc)':'rgba(242,243,247,.6)' })),
+      allCats:()=>{ const key=s.mode==='family'?'catsFam':'catsAd'; this.setState({[key]: allSel?[]:catList.map(c=>c.id)}); },
+      allCatsLabel: allSel?'Wyczyść':'Wszystkie',
+      adv:s.adv, toggleAdv:()=>this.setState({adv:!s.adv}), advArrow:s.adv?'▲':'▼',
+      hintKnobBg:s.hintCat?'var(--acc)':'rgba(255,255,255,.14)', hintKnobX:s.hintCat?'21px':'3px',
+      toggleHint:()=>this.setState({hintCat:!s.hintCat}),
+      twinKnobBg:s.twin?'var(--acc2)':'rgba(255,255,255,.14)', twinKnobX:s.twin?'21px':'3px',
+      toggleTwin:()=>this.setState({twin:!s.twin}),
+      timerOpts:this.optRow([{l:'Wył.',v:0},{l:'15 s',v:15},{l:'30 s',v:30}], s.timer, v=>this.setState({timer:v,tleft:v})),
+      lapsOpts:this.optRow([{l:'1',v:1},{l:'2',v:2},{l:'3',v:3}], s.laps, v=>this.setState({laps:v})),
+      votingOpts:this.optRow([{l:'Tajne',v:'secret'},{l:'Na głos',v:'aloud'}], s.voting, v=>this.setState({voting:v})),
+      totalRounds:s.totalRounds,
+      decR:()=>this.setState({totalRounds:Math.max(1,s.totalRounds-1)}),
+      incR:()=>this.setState({totalRounds:Math.min(10,s.totalRounds+1)}),
+      hasErr:!!s.err, err:s.err,
+      startOp:(n>=3 && this.selCats().length>0 && s.loaded)?'1':'.45',
+      start:()=>this.startGame(),
+      roundTag:'RUNDA '+s.round+' / '+s.totalRounds, roundNum:s.round,
+      riName:s.names[s.ri]||'', riNum:s.ri+1,
+      tapPass:()=>this.setState({screen:'card', holding:false, seen:false}),
+      holding:s.holding, notHolding:!s.holding,
+      holdStart:e=>{ if(e && e.preventDefault) e.preventDefault(); this.vib(25); this.setState({holding:true}); clearTimeout(this.holdT); this.holdT=setTimeout(()=>{ if(this.state.holding) this.setState({seen:true}); },1000); },
+      holdEnd:()=>{ clearTimeout(this.holdT); if(this.state.holding) this.setState({holding:false}); },
+      cardIsImp, cardIsCrew: scr==='card' && !cardIsImp,
+      cardWord, showCatHint:s.hintCat, catName:s.catName, catNameUp:U(s.catName),
+      holdFill:s.holding?'scaleX(1)':'scaleX(0)',
+      holdTrans:s.holding?'transform 1s linear':'transform .15s ease',
+      passOp:s.seen?'1':'.35',
+      passBtnLabel: s.ri>=n-1 ? 'Wszyscy gotowi — start!' : 'Przekaż dalej',
+      passNext:()=>{ if(!this.state.seen) return; const ri=this.state.ri+1;
+        if(ri<n) this.setState({ri, screen:'pass', holding:false, seen:false});
+        else this.setState({screen:'round', lap:1, sp:0, discuss:false, tleft:this.state.timer}); },
+      lap:s.lap, laps:s.laps, discuss:s.discuss, notDiscuss:!s.discuss,
+      timerOn:s.timer>0, tleft:s.tleft,
+      timerCol:s.tleft>0?'var(--acc)':'var(--acc2)',
+      timerAnim:s.tleft>0?'none':'blinkSoft 1s ease infinite',
+      orderRows:s.order.map((pi,k)=>({ num:k+1, name:s.names[pi], cur:!s.discuss && k===s.sp,
+        bg:(!s.discuss && k===s.sp)?'rgba(var(--acc-rgb),.1)':'#12121c',
+        bd:(!s.discuss && k===s.sp)?'rgba(var(--acc-rgb),.6)':'rgba(255,255,255,.08)' })),
+      nextSpeakerLabel: lastSpeak ? 'Koniec okrążeń → dyskusja' : 'Następna osoba',
+      nextSpeaker:()=>{ const st=this.state; let sp=st.sp+1, lap=st.lap, discuss=false;
+        if(sp>=st.order.length){ sp=0; lap=lap+1; if(lap>st.laps){ discuss=true; lap=st.laps; sp=st.sp; } }
+        this.setState({sp,lap,discuss,tleft:st.timer}); },
+      toVoting:()=>{ const st=this.state;
+        if(st.voting==='secret') this.setState({votes:st.names.map(()=>-1), vi:0, cands:null, runoff:0, screen:'votepass'});
+        else this.setState({aloudSel:[], cands:null, runoff:0, screen:'aloud'}); },
+      runoffOn:s.runoff>0,
+      viName:s.names[s.vi]||'', viNameUp:U(s.names[s.vi]||''), viNum:s.vi+1,
+      tapVotePass:()=>this.setState({screen:'vote'}),
+      voteGrid:(s.cands||idxAll).filter(i=>i!==s.vi).map(i=>({ name:s.names[i], pick:()=>{
+        const st=this.state; const votes=st.votes.slice(); votes[st.vi]=i; this.vib(15);
+        const vi=st.vi+1;
+        if(vi<n) this.setState({votes, vi, screen:'votepass'}); else { this.setState({votes},()=>this.finishSecret(votes)); }
+      }})),
+      aloudTitle: s.runoff>0 ? 'Dogrywka — kto ściemnia?' : 'Na kogo wskazuje grupa?',
+      aloudGrid:(s.cands||idxAll).map(i=>({ name:s.names[i], toggle:()=>{ const st=this.state;
+          const sel=st.aloudSel.includes(i)?st.aloudSel.filter(x=>x!==i):[...st.aloudSel,i]; this.setState({aloudSel:sel}); },
+        bd:s.aloudSel.includes(i)?'rgba(var(--acc-rgb),.8)':'rgba(255,255,255,.14)',
+        bg:s.aloudSel.includes(i)?'rgba(var(--acc-rgb),.16)':'#14141f',
+        col:s.aloudSel.includes(i)?'var(--acc)':'#f2f3f7' })),
+      aloudOp:s.aloudSel.length?'1':'.4',
+      aloudConfirm:()=>{ const sel=this.state.aloudSel; if(!sel.length) return;
+        if(sel.length===1) this.accuse(sel[0], null); else this.handleTie(sel); },
+      accusedName:s.names[s.accused]||'',
+      revealed:s.revealed, notRevealed:!s.revealed, caught:s.caught, notCaught:!s.caught,
+      revealVerdict:()=>{ this.vib(s.caught?[60,60,140]:[240]); this.setState({revealed:true}); },
+      verdictBtnLabel:s.caught?'Ostatnia szansa impostora':'Zobacz wynik rundy',
+      verdictBtnBg:s.caught?'var(--acc2)':'var(--acc)',
+      afterVerdict:()=>{ if(this.state.caught) this.buildChance();
+        else this.applyImpWin('IMPOSTOR WYGRYWA RUNDĘ','Wskazaliście niewinnego: '+this.state.names[this.state.accused]+'.', false); },
+      chanceCards:s.chance.map(w=>{ const done=s.chanceDone; const isReal=w===s.word; const isPick=w===s.chancePick;
+        return { w:U(w), pick:()=>this.pickChance(w),
+          bd: !done ? 'rgba(var(--acc2-rgb),.4)' : (isReal ? 'rgba(var(--acc-rgb),.9)' : (isPick ? 'rgba(255,80,80,.8)' : 'rgba(255,255,255,.08)')),
+          bg: !done ? '#14141f' : (isReal ? 'rgba(var(--acc-rgb),.16)' : (isPick ? 'rgba(255,80,80,.12)' : '#101019')),
+          col: !done ? '#f2f3f7' : (isReal ? 'var(--acc)' : (isPick ? '#ff9d9d' : 'rgba(242,243,247,.4)')),
+          op: !done ? '1' : (isReal||isPick ? '1' : '.55') }; }),
+      chanceDone:s.chanceDone,
+      chanceResTitle:s.stolen?'TRAFIONE!':'PUDŁO!',
+      chanceResCol:s.stolen?'var(--acc2)':'var(--acc)',
+      chanceResSub:s.stolen?'Impostor odgadł hasło i kradnie zwycięstwo rundy.':'Załoga zgarnia punkty za wykrycie impostora.',
+      toSummary:()=>this.setState({screen:'summary'}),
+      resTitle:s.resTitle, resSub:s.resSub,
+      resColor:s.resGood?'var(--acc)':'var(--acc2)',
+      resGlow:s.resGood?'rgba(var(--acc-rgb),.45)':'rgba(var(--acc2-rgb),.45)',
+      wordUp:U(s.word), impWordUp:U(s.impWord), twinMode:s.twin,
+      impLabel:s.impSet.length>1?'IMPOSTORZY':'IMPOSTOR',
+      impNames:s.impSet.map(i=>s.names[i]).join(', '),
+      hasCorrect:s.correctVoters.length>0, correctLine:s.correctVoters.join(', '),
+      hasPts:s.resPts.length>0, resPts:s.resPts,
+      toScores:()=>this.setState({screen:'scores'}),
+      scoreRows:sorted.map((r,k)=>({ name:r.name, pts:r.pts, d:r.d, hasD:r.d>0, rank:k+1,
+        bg:k===0?'rgba(var(--acc-rgb),.08)':'#12121c',
+        bd:k===0?'rgba(var(--acc-rgb),.45)':'rgba(255,255,255,.08)',
+        rankCol:k===0?'var(--acc)':'rgba(242,243,247,.5)' })),
+      nextBtnLabel:s.round>=s.totalRounds?'Zobacz podium':'Następna runda',
+      notLastRound:s.round<s.totalRounds,
+      nextOrPodium:()=>{ if(this.state.round>=this.state.totalRounds) this.setState({screen:'podium'}); else this.nextRound(); },
+      endGame:()=>this.setState({screen:'podium'}),
+      conf:this.confs, winnerName:sorted[0]?sorted[0].name:'',
+      podium:podArr, hasRest:sorted.length>3,
+      restRows:sorted.slice(3).map((r,k)=>({rank:k+4, name:r.name, pts:r.pts})),
+      rematch:()=>{ this.setState({scores:this.state.names.map(()=>0), round:0, lastDelta:this.state.names.map(()=>0)}, ()=>this.nextRound()); },
+      toSetup:()=>this.setState({screen:'setup'}),
+      pickFamily:()=>this.setState({mode:'family', err:''}),
+      pickAdult:()=>{ if(this.state.adultOk) this.setState({mode:'adult', err:''}); else this.setState({ageGate:true}); },
+      ageYes:()=>this.setState({adultOk:true, mode:'adult', ageGate:false}),
+      ageNo:()=>this.setState({ageGate:false})
+    };
+  }
+  addP(){
+    const t=this.state.nameInput.trim();
+    if(!t) return;
+    if(this.state.names.length>=12){ this.setState({err:'Maksymalnie 12 graczy.'}); return; }
+    if(this.state.names.some(x=>x.toLowerCase()===t.toLowerCase())){ this.setState({err:'Imiona muszą być unikalne.'}); return; }
+    this.setState(s=>({names:[...s.names,t], nameInput:'', err:''}));
+  }
+  toggleCat(id){
+    const s=this.state; const key=s.mode==='family'?'catsFam':'catsAd'; const cur=s[key];
+    this.setState({[key]: cur.includes(id)?cur.filter(x=>x!==id):[...cur,id], err:''});
+  }
+  startGame(){
+    const s=this.state;
+    if(!s.loaded) return;
+    if(s.names.length<3){ this.setState({err:'Dodaj co najmniej 3 graczy.'}); return; }
+    if(this.selCats().length<1){ this.setState({err:'Wybierz co najmniej jedną kategorię haseł.'}); return; }
+    const imps=Math.min(s.imps, this.maxImps());
+    this.setState({imps, err:'', scores:s.names.map(()=>0), round:0, lastDelta:s.names.map(()=>0)}, ()=>this.nextRound());
+  }
+}
+</script>
+<template id="__bundler_thumbnail" data-bg-color="#07070d">
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<rect width="1200" height="800" fill="#07070d"/>
+<circle cx="600" cy="330" r="130" fill="none" stroke="#00e5ff" stroke-width="14"/>
+<circle cx="600" cy="330" r="66" fill="#00e5ff" opacity="0.25"/>
+<text x="600" y="600" text-anchor="middle" font-family="system-ui,sans-serif" font-size="100" font-weight="900" fill="#ffffff">IMP<tspan fill="#ff9f1c">O</tspan>STOR</text>
+</svg>
+</template>
+</body>
+</html>
