@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IMPOSTOR — imprezowa gra słowna</title>
+<meta name="description" content="Imprezowa gra słowna na jeden telefon. 3–12 graczy. Znajdź impostora!">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕵️%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#070710;
+  --panel:#131322;
+  --panel2:#1b1b30;
+  --ink:#f4f2ff;
+  --muted:#8f8cb0;
+  --line:rgba(255,255,255,.09);
+  --pink:#ff2e7e;
+  --cyan:#00e0ff;
+  --lime:#c8ff3e;
+  --red:#ff3b5c;
+  --amber:#ffb02e;
+  --r:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);
+  min-height:100dvh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(60vw 60vw at 12% -5%, rgba(255,46,126,.20), transparent 60%),
+    radial-gradient(55vw 55vw at 105% 70%, rgba(0,224,255,.14), transparent 60%),
+    radial-gradient(40vw 40vw at 50% 115%, rgba(200,255,62,.08), transparent 60%),
+    var(--bg);
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+#app{max-width:520px;margin:0 auto;padding:22px 18px calc(30px + env(safe-area-inset-bottom));min-height:100dvh;display:flex;flex-direction:column}
+.screen{animation:in .35s cubic-bezier(.2,.8,.2,1) both;display:flex;flex-direction:column;flex:1}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+h1.logo{
+  font-size:clamp(3rem,16vw,4.6rem);font-weight:900;letter-spacing:.04em;text-align:center;line-height:.95;
+  text-shadow:0 0 22px rgba(255,46,126,.55), -3px 0 0 rgba(0,224,255,.6), 3px 0 0 rgba(255,46,126,.6);
+}
+.tag{color:var(--muted);text-align:center;margin-top:10px;font-size:1rem;letter-spacing:.02em}
+.eyebrow{font-size:.78rem;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}
+h2{font-size:1.6rem;font-weight:900;letter-spacing:.01em;margin-bottom:4px}
+.sub{color:var(--muted);font-size:.95rem;line-height:1.45}
+.stack{display:flex;flex-direction:column;gap:14px}
+.spacer{flex:1}
+.panel{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.panel h3{font-size:.8rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:58px;padding:14px 18px;border-radius:16px;border:none;cursor:pointer;
+  font:inherit;font-size:1.05rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#12030b;
+  background:linear-gradient(135deg,var(--pink),#ff6aa8);
+  box-shadow:0 8px 28px rgba(255,46,126,.38), inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;
+}
+.btn:active{transform:scale(.97);filter:brightness(1.08)}
+.btn.cyan{background:linear-gradient(135deg,var(--cyan),#6ff0ff);box-shadow:0 8px 28px rgba(0,224,255,.32), inset 0 1px 0 rgba(255,255,255,.4);color:#02141a}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink);box-shadow:none;font-weight:700}
+.btn.ghost:active{border-color:var(--pink)}
+.btn.danger{background:linear-gradient(135deg,var(--red),#ff7b93);box-shadow:0 8px 28px rgba(255,59,92,.35);color:#1a040a}
+.btn:disabled{opacity:.35;pointer-events:none}
+.btn.small{min-height:44px;font-size:.85rem;width:auto;padding:10px 16px;border-radius:12px}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+input[type=text]{
+  width:100%;min-height:54px;padding:12px 16px;border-radius:14px;font:inherit;font-size:1.05rem;color:var(--ink);
+  background:rgba(255,255,255,.05);border:1.5px solid var(--line);outline:none;transition:border-color .15s;
+}
+input[type=text]:focus{border-color:var(--cyan)}
+input[type=text]::placeholder{color:#5b587a}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;
+  background:rgba(255,255,255,.06);border:1.5px solid var(--line);font-weight:700;font-size:.95rem;
+  cursor:pointer;user-select:none;-webkit-user-select:none;transition:all .15s;
+}
+.chip .x{color:var(--muted);font-weight:900;font-size:1.05rem;line-height:1}
+.chip.sel{background:rgba(0,224,255,.12);border-color:var(--cyan);color:var(--cyan)}
+.chip.player{background:rgba(255,46,126,.10);border-color:rgba(255,46,126,.45)}
+.seg{display:flex;background:rgba(255,255,255,.05);border:1.5px solid var(--line);border-radius:14px;padding:4px;gap:4px}
+.seg button{
+  flex:1;min-height:44px;border:none;border-radius:10px;background:transparent;color:var(--muted);
+  font:inherit;font-weight:800;font-size:.92rem;cursor:pointer;transition:all .15s;letter-spacing:.02em;
+}
+.seg button.on{background:linear-gradient(135deg,var(--pink),#ff5f9e);color:#12030b;box-shadow:0 4px 14px rgba(255,46,126,.35)}
+.stepper{display:flex;align-items:center;gap:14px;justify-content:space-between}
+.stepper .val{font-size:1.9rem;font-weight:900;min-width:52px;text-align:center;color:var(--lime)}
+.stepper button{
+  width:52px;height:52px;border-radius:14px;border:1.5px solid var(--line);background:rgba(255,255,255,.05);
+  color:var(--ink);font-size:1.6rem;font-weight:900;cursor:pointer;transition:all .12s;flex:none;
+}
+.stepper button:active{border-color:var(--pink);transform:scale(.94)}
+.field{display:flex;flex-direction:column;gap:8px}
+.field label{font-size:.85rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.hint{font-size:.82rem;color:var(--muted);line-height:1.4}
+.err{color:var(--red);font-size:.88rem;font-weight:700;min-height:1.2em}
+details.adv{border:1.5px solid var(--line);border-radius:var(--r);overflow:hidden}
+details.adv summary{
+  list-style:none;cursor:pointer;padding:16px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  font-size:.8rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;user-select:none;
+}
+details.adv summary::after{content:"+";font-size:1.3rem;color:var(--cyan)}
+details.adv[open] summary::after{content:"–"}
+details.adv .inner{padding:0 16px 16px;display:flex;flex-direction:column;gap:16px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.switch .lbl{font-weight:700;font-size:.98rem}
+.switch .lbl small{display:block;color:var(--muted);font-weight:500;font-size:.8rem;margin-top:2px}
+.tgl{
+  width:56px;height:32px;border-radius:999px;background:rgba(255,255,255,.10);border:1.5px solid var(--line);
+  position:relative;cursor:pointer;transition:all .2s;flex:none;
+}
+.tgl::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#6d6a8f;transition:all .2s}
+.tgl.on{background:rgba(200,255,62,.2);border-color:var(--lime)}
+.tgl.on::after{left:27px;background:var(--lime);box-shadow:0 0 10px rgba(200,255,62,.7)}
+/* pass screen */
+.pass{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;gap:12px}
+.pass .who{font-size:clamp(2.6rem,13vw,3.8rem);font-weight:900;letter-spacing:.01em;color:var(--cyan);text-shadow:0 0 30px rgba(0,224,255,.5);word-break:break-word}
+.pass .icon{font-size:3rem;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+/* role card */
+.cardwrap{perspective:1200px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px}
+.role-card{
+  position:relative;min-height:320px;border-radius:26px;cursor:pointer;
+  transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,.9,.3,1);
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;
+}
+.role-card.open{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;border-radius:26px;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;
+}
+.face.front{
+  background:linear-gradient(160deg,#1d1d36,#12121f);border:2px solid rgba(255,46,126,.4);
+  box-shadow:0 0 40px rgba(255,46,126,.18), inset 0 0 60px rgba(255,46,126,.05);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 30px rgba(255,46,126,.15)}50%{box-shadow:0 0 55px rgba(255,46,126,.4)}}
+.face.front .q{font-size:4.5rem;font-weight:900;color:var(--pink);text-shadow:0 0 25px rgba(255,46,126,.8)}
+.face.front .tip{color:var(--muted);font-weight:700;font-size:.95rem;letter-spacing:.04em}
+.face.back{background:linear-gradient(160deg,#101024,#0a0a18);border:2px solid var(--line);transform:rotateY(180deg)}
+.face.back.crew{border-color:rgba(200,255,62,.55);box-shadow:inset 0 0 70px rgba(200,255,62,.06)}
+.face.back.imp{border-color:rgba(255,59,92,.6);box-shadow:inset 0 0 70px rgba(255,59,92,.08)}
+.rolelbl{font-size:.8rem;font-weight:800;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
+.word{font-size:clamp(1.9rem,9vw,2.9rem);font-weight:900;color:var(--lime);text-shadow:0 0 26px rgba(200,255,62,.45);word-break:break-word;line-height:1.1}
+.impword{font-size:clamp(1.8rem,8.5vw,2.6rem);font-weight:900;color:var(--red);text-shadow:0 0 26px rgba(255,59,92,.55);line-height:1.15}
+.catline{color:var(--cyan);font-weight:700;font-size:.95rem}
+/* order list */
+.order{display:flex;flex-direction:column;gap:8px}
+.order .p{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;
+  background:rgba(255,255,255,.05);border:1.5px solid var(--line);font-weight:800;font-size:1.05rem;
+}
+.order .n{
+  width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--cyan));
+  color:#0a0a14;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;flex:none;
+}
+.bignum{font-size:3.2rem;font-weight:900;color:var(--cyan);text-align:center;font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(0,224,255,.4)}
+/* vote grid */
+.votes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vbtn{
+  min-height:64px;border-radius:16px;border:1.5px solid var(--line);background:rgba(255,255,255,.05);
+  color:var(--ink);font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;padding:10px;
+  transition:all .15s;word-break:break-word;
+}
+.vbtn.sel{border-color:var(--pink);background:rgba(255,46,126,.16);color:var(--pink);box-shadow:0 0 20px rgba(255,46,126,.25)}
+/* last chance */
+.lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lc{
+  min-height:70px;border-radius:16px;border:1.5px solid rgba(255,176,46,.4);background:rgba(255,176,46,.06);
+  color:var(--ink);font:inherit;font-weight:800;font-size:1rem;cursor:pointer;padding:10px;transition:all .15s;word-break:break-word;
+}
+.lc:active{transform:scale(.96);border-color:var(--amber)}
+/* reveal */
+.reveal-center{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;gap:16px}
+.big-reveal{font-size:clamp(2.2rem,11vw,3.4rem);font-weight:900;line-height:1.05;word-break:break-word}
+.badge{
+  display:inline-flex;align-self:center;padding:8px 18px;border-radius:999px;font-weight:900;font-size:.85rem;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.badge.imp{background:rgba(255,59,92,.15);border:1.5px solid var(--red);color:var(--red)}
+.badge.crew{background:rgba(200,255,62,.12);border:1.5px solid var(--lime);color:var(--lime)}
+/* score */
+.score{display:flex;flex-direction:column;gap:8px}
+.score .srow{
+  display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:14px;
+  background:rgba(255,255,255,.05);border:1.5px solid var(--line);
+}
+.score .srow.top{border-color:rgba(200,255,62,.5);background:rgba(200,255,62,.06)}
+.score .rank{width:28px;font-weight:900;color:var(--muted);font-size:.95rem}
+.score .name{flex:1;font-weight:800;font-size:1.05rem;word-break:break-word}
+.score .pts{font-weight:900;font-size:1.15rem;color:var(--cyan);font-variant-numeric:tabular-nums}
+.score .delta{font-size:.85rem;font-weight:800;color:var(--lime)}
+/* podium */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:20px 0}
+.pod{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:130px}
+.pod .cup{font-size:2.2rem}
+.pod .pname{font-weight:900;font-size:.95rem;text-align:center;word-break:break-word}
+.pod .ppts{color:var(--muted);font-weight:700;font-size:.85rem}
+.pod .bar{width:100%;border-radius:12px 12px 0 0;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1.5px solid var(--line);border-bottom:none}
+.pod.p1 .bar{height:110px;border-color:rgba(255,176,46,.6);box-shadow:0 0 30px rgba(255,176,46,.2)}
+.pod.p2 .bar{height:80px;border-color:rgba(200,220,255,.4)}
+.pod.p3 .bar{height:58px;border-color:rgba(205,127,50,.5)}
+/* confetti */
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.confetti i{position:absolute;top:-4vh;width:9px;height:14px;opacity:.9;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(4,4,10,.8);backdrop-filter:blur(6px);z-index:10;display:flex;align-items:center;justify-content:center;padding:20px;animation:in .2s both}
+.modal{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1.5px solid var(--line);border-radius:var(--r);padding:24px;max-width:440px;width:100%;max-height:82dvh;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.modal h2{font-size:1.35rem}
+.modal p,.modal li{color:var(--muted);font-size:.95rem;line-height:1.55}
+.modal ol{padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.modal b{color:var(--ink)}
+.timerbox{display:flex;flex-direction:column;align-items:center;gap:8px}
+.timerbig{font-size:3.4rem;font-weight:900;font-variant-numeric:tabular-nums;color:var(--lime);text-shadow:0 0 22px rgba(200,255,62,.4)}
+.timerbig.low{color:var(--red);text-shadow:0 0 22px rgba(255,59,92,.6);animation:blink .5s steps(2) infinite}
+@keyframes blink{50%{opacity:.4}}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-weight:800;font-size:.85rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.topbar .r{color:var(--cyan)}
+ul.plain{list-style:none;display:flex;flex-direction:column;gap:6px}
+ul.plain li{color:var(--muted);font-size:.95rem}
+ul.plain li b{color:var(--lime)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+/* ============================================================
+   IMPOSTOR — imprezowa gra słowna (jeden plik, zero zależności)
+   Stan wyłącznie w zmiennych JS. Brak localStorage/sessionStorage.
+   ============================================================ */
+
+/* ---------- BAZA HASEŁ ---------- */
+const FAMILY = {
+"Zwierzęta":["żyrafa","pingwin","jeż","słoń","kot","pies","chomik","wiewiórka","sowa","nietoperz","delfin","rekin","ośmiornica","meduza","krokodyl","żółw","papuga","flaming","paw","bocian","komar","biedronka","pszczoła","mrówka","pająk","wąż","żaba","koń","krowa","świnia","owca","koza","kura","kaczka","lis","wilk","niedźwiedź","łoś","dzik","kret","leniwiec","kangur","panda","zebra","hipopotam","wielbłąd"],
+"Jedzenie":["pierogi","pizza hawajska","żurek","bigos","kotlet schabowy","rosół","spaghetti","sushi","kebab","zapiekanka","frytki","hamburger","hot dog","naleśniki","placki ziemniaczane","gołąbki","leczo","sałatka jarzynowa","śledź w śmietanie","oscypek","pączek","sernik","szarlotka","makowiec","lody","gofry","popcorn","czekolada","żelki","chipsy","ogórek kiszony","kiełbasa z grilla","kaszanka","tatar","jajecznica","owsianka","tost z serem","ramen","tacos","kluski śląskie"],
+"Sport i ruch":["skok w dal","joga","bramkarz","maraton","rzut młotem","skoki narciarskie","siatkówka plażowa","pompki","przysiady","deska (plank)","zumba","pilates","crossfit","siłownia","bieganie","jazda na rowerze","rolki","deskorolka","hulajnoga","pływanie żabką","skok na bombę","wspinaczka","kajak","żagle","narty","snowboard","łyżwy","hokej","koszykówka","ping-pong","badminton","tenis","golf","rzutki","kręgle","bilard","przeciąganie liny","skakanka","hula-hop","berek"],
+"Zawody":["strażak","fryzjer","youtuber","lekarz","dentysta","pielęgniarka","nauczyciel","kucharz","kelner","barista","barman","kierowca autobusu","taksówkarz","pilot samolotu","stewardesa","policjant","żołnierz","prawnik","sędzia","ksiądz","rolnik","górnik","hydraulik","elektryk","mechanik","programista","księgowa","listonosz","kurier","sprzątaczka","ochroniarz","weterynarz","aptekarz","dziennikarz","aktor","piosenkarz","influencer","trener personalny","psycholog","astronauta"],
+"Miejsca":["plaża","Wawel","poczekalnia u dentysty","kościół","cmentarz","biblioteka","kino","teatr","muzeum","zoo","wesołe miasteczko","aquapark","galeria handlowa","bazar","sklep osiedlowy","stacja benzynowa","lotnisko","dworzec PKP","przystanek autobusowy","winda","piwnica","strych","garaż","działka","las","góry","jezioro","pustynia","biegun północny","Paryż","Nowy Jork","Egipt","sauna","solarium","urząd skarbowy","komisariat","szpital","przedszkole","akademik","klub nocny"],
+"Filmy i bajki":["Shrek","Harry Potter","Smerfy","Kevin sam w domu","Titanic","Gwiezdne wojny","Władca Pierścieni","Batman","Spider-Man","Superman","Kubuś Puchatek","Bolek i Lolek","Reksio","Koziołek Matołek","Scooby-Doo","SpongeBob","Tom i Jerry","Minionki","Madagaskar","Epoka lodowcowa","Kraina lodu","Król Lew","Aladyn","Mała Syrenka","Piękna i Bestia","Toy Story","Auta","Gdzie jest Nemo","Rodzina Addamsów","Wednesday","Stranger Things","Gra o tron","Wiedźmin","Ranczo","Świat według Kiepskich","James Bond","Rocky","Rambo","Matrix","Vaiana"],
+"Dom i codzienność":["odkurzacz","poniedziałek","korek na drodze","pralka","zmywarka","lodówka","mikrofalówka","żelazko","suszarka do włosów","pilot do telewizora","kanapa","poduszka","kołdra","kapcie","szlafrok","budzik","drzemka","pranie","zmywanie naczyń","wynoszenie śmieci","zakupy spożywcze","paragon","promocja","reklamówka","sąsiad","klucze","ładowarka do telefonu","hasło do wifi","przeciąg","kurz","pajęczyna","doniczka","podlewanie kwiatów","remont","wiertarka","drabina","skarpetka nie do pary","rachunki","segregacja śmieci","budzenie się przed budzikiem"],
+"Podróże":["walizka","all inclusive","zgubiony bagaż","paszport","odprawa na lotnisku","kontrola bezpieczeństwa","opóźniony lot","jet lag","autostop","kamper","namiot","karimata","plecak","mapa","kompas","GPS","przewodnik","pamiątki","magnes na lodówkę","pocztówka","krem z filtrem","oparzenie słoneczne","leżak","parawan","hotel","hostel","apartament","śniadanie w formie bufetu","animator","wycieczka objazdowa","pielgrzymka","rejs","prom","pociąg nocny","bilet ulgowy","kanapki na drogę","choroba lokomocyjna","granica","kantor","hamak"]
+};
+const ADULT = {
+"Flirt i seks":["szybki numerek","jednonocna przygoda","gra wstępna","sexting","striptiz","francuski pocałunek","malinka","przyjaźń z korzyściami","brudne SMS-y","nagie zdjęcie","taniec erotyczny","rozbieranie wzrokiem","seks na plaży","poranne figle","prysznic we dwoje","całowanie po szyi","gryzienie ucha","szeptanie do ucha","zdrada","romans w pracy","przygoda na wakacjach","trójkąt","otwarty związek","masaż erotyczny","rozbierany poker","gra w butelkę","bielizna na żyrandolu","seks w samochodzie","przerwa na numerek","głośni sąsiedzi","cicho, bo rodzice śpią","dirty talk","pozycja na jeźdźca","misjonarz","69","orgazm","symulowany orgazm","poranek po","zimny prysznic","zakazany owoc"],
+"Sypialnia":["wibrator","kajdanki","bielizna erotyczna","kamasutra","lateks","pejcz","opaska na oczy","olejek do masażu","lubrykant","prezerwatywa","skrzypiące łóżko","lustro na suficie","świece zapachowe","kajdanki z futerkiem","stringi","koronkowy biustonosz","jedwabna pościel","gorset","przebranie pielęgniarki","przebranie policjantki","klaps","wiązanie","dominacja","uległość","bezpieczne słowo","zabawki dla dorosłych","sex shop","kostka lodu","bita śmietana","truskawki i szampan","kabaretki","podwiązka","szpilki","pas do pończoch","pończochy","negliż","różowe światło","zasłonięte okna","zamknięte drzwi","poduszka pod biodra"],
+"Randki i podryw":["Tinder","ghosting","randka w ciemno","sugar daddy","walk of shame","friendzone","catfish","pierwsza randka","tekst na podryw","swipe w prawo","nieudana randka","rachunek na pół","ucieczka przez okno w toalecie","udawany telefon od przyjaciółki","była dziewczyna","były chłopak","toksyczny związek","love bombing","podryw na psa","podryw na horoskop","u mnie czy u ciebie?","numer na serwetce","drink od nieznajomego","kolacja przy świecach","Netflix i chill","status: to skomplikowane","pisanie po pijaku do byłej","zostawiony na czytaniu","podwójna randka","speed dating","aplikacja randkowa","zdjęcie sprzed 10 lat na profilu","wysokie wymagania","randka z internetu","teściowa","oświadczyny","pierścionek zaręczynowy","wieczór kawalerski","wieczór panieński","dziewczyna z siłowni"],
+"Melanż i używki":["kac gigant","shoty","urwany film","zgon na kanapie","melanż do rana","before","afterparty","piwo pod sklepem","tequila z solą i cytryną","wino z kartonu","piwo bezalkoholowe","grzaniec","bimber","drink z palemką","beer pong","nigdy przenigdy","toast","na zdrowie!","kolejka dla wszystkich","barman zna mnie z imienia","taniec do białego rana","pijacki freestyle","karaoke po pijaku","palenie na balkonie","szlugi","skręt","kac moralny","pijane zakupy w internecie","telefon do byłej po wódce","kebab o 4 rano","sen w wannie","zgubiony telefon na imprezie","ostatnie piwo i idziemy","niedzielny detoks","klin","gorzała","flaszka","procenty","dziwne zdjęcia w galerii","nieznajomi najlepsi przyjaciele"],
+"Wstyd i wpadki":["SMS do byłej o 3 w nocy","taniec na stole","wpadka przy teściach","pomylenie imion w łóżku","głośny pierd na randce","rodzice wchodzą do pokoju","zapomniane imię rano","rozdarte spodnie na imprezie","upadek na parkiecie","screen wysłany do obgadywanego","lajk na zdjęciu byłej sprzed 3 lat","przyłapanie na kłamstwie","papier toaletowy przyklejony do buta","jedzenie w zębach","otwarty rozporek","pocałunek z przypadkową osobą","zwymiotowanie na buty","pomalowana twarz śpiocha","wiadomość wysłana do szefa","pomylenie grup na czacie","przewrócenie się na oczach tłumu","wejście do złej toalety","zapomniany portfel na randce","za wczesne kocham cię","chrapanie przy nowym partnerze","ślinienie się we śnie","zdradliwa autokorekta","mama powiedziane do nauczycielki","machanie do nieznajomego","sekret wygadany po pijaku","historia przeglądarki","kłótnia słyszana przez sąsiadów","taniec przed lustrem przyłapany","spadnięcie z krzesła na spotkaniu","kamera włączona za wcześnie","niewyciszony mikrofon","czkawka w kościele","śpiew na cały głos ze słuchawkami","dwie różne skarpetki na spotkaniu","sos na białej koszuli"],
+"Mocny słownik":["kurwa","chuj","dupa","cycki","fiut","kutas","cipka","gówno","zajebiście","spierdalaj","wypierdalaj","najebany","opierdol","wkurw","zjebka","chujnia","pierdolnik","dupek","palant","pierdoła","burdel","syf","obciach","dzban","janusz","grażyna","sebix","karyna","madka","przegryw","wygryw","typiara","mordeczka","sztos","essa","cringe","sigma","baza","lans","szajs"]
+};
+/* Pary do wariantu „bliźniacze hasło" */
+const TWINS = {
+"Zwierzęta":[["kot","pies"],["lew","tygrys"],["żaba","ropucha"],["pszczoła","osa"],["rekin","delfin"],["koń","osioł"],["kura","kaczka"],["wilk","lis"]],
+"Jedzenie":[["kawa","herbata"],["pizza","zapiekanka"],["pierogi","kluski śląskie"],["frytki","chipsy"],["sernik","szarlotka"],["rosół","pomidorowa"],["hamburger","kebab"],["naleśniki","gofry"]],
+"Sport i ruch":[["joga","pilates"],["narty","snowboard"],["rolki","deskorolka"],["koszykówka","siatkówka"],["tenis","badminton"],["bieganie","nordic walking"],["siłownia","crossfit"],["kręgle","bilard"]],
+"Zawody":[["strażak","policjant"],["lekarz","pielęgniarka"],["kucharz","kelner"],["fryzjer","barber"],["nauczyciel","wykładowca"],["kierowca autobusu","taksówkarz"],["aktor","piosenkarz"],["listonosz","kurier"]],
+"Miejsca":[["plaża","basen"],["kino","teatr"],["las","park"],["lotnisko","dworzec PKP"],["muzeum","galeria sztuki"],["sauna","jacuzzi"],["klub nocny","dyskoteka"],["biblioteka","księgarnia"]],
+"Filmy i bajki":[["Shrek","Madagaskar"],["Harry Potter","Władca Pierścieni"],["Batman","Superman"],["Kraina lodu","Vaiana"],["Tom i Jerry","Scooby-Doo"],["Titanic","Pearl Harbor"],["Gwiezdne wojny","Star Trek"],["Wiedźmin","Gra o tron"]],
+"Dom i codzienność":[["odkurzacz","mop"],["pralka","zmywarka"],["kanapa","fotel"],["budzik","drzemka"],["poduszka","kołdra"],["żelazko","suszarka do włosów"],["klucze","portfel"],["lodówka","zamrażarka"]],
+"Podróże":[["walizka","plecak"],["hotel","hostel"],["namiot","kamper"],["paszport","dowód osobisty"],["pociąg","autobus"],["prom","rejs"],["mapa","GPS"],["leżak","hamak"]],
+"Flirt i seks":[["szybki numerek","jednonocna przygoda"],["malinka","francuski pocałunek"],["sexting","brudne SMS-y"],["striptiz","taniec erotyczny"],["romans w pracy","zdrada"],["gra wstępna","masaż erotyczny"],["prysznic we dwoje","poranne figle"],["trójkąt","otwarty związek"]],
+"Sypialnia":[["kajdanki","opaska na oczy"],["stringi","koronkowy biustonosz"],["lubrykant","olejek do masażu"],["gorset","pończochy"],["klaps","pejcz"],["przebranie pielęgniarki","przebranie policjantki"],["jedwabna pościel","świece zapachowe"],["wibrator","zabawki dla dorosłych"]],
+"Randki i podryw":[["Tinder","randka w ciemno"],["ghosting","friendzone"],["walk of shame","poranek po"],["pierwsza randka","podwójna randka"],["tekst na podryw","numer na serwetce"],["była dziewczyna","były chłopak"],["wieczór kawalerski","wieczór panieński"],["oświadczyny","pierścionek zaręczynowy"]],
+"Melanż i używki":[["shoty","tequila z solą i cytryną"],["kac gigant","urwany film"],["before","afterparty"],["wino z kartonu","bimber"],["beer pong","karaoke po pijaku"],["piwo pod sklepem","drink z palemką"],["zgon na kanapie","sen w wannie"],["melanż do rana","impreza domowa"]],
+"Wstyd i wpadki":[["SMS do byłej o 3 w nocy","pisanie po pijaku do byłej"],["taniec na stole","upadek na parkiecie"],["otwarty rozporek","papier na bucie"],["wejście do złej toalety","machanie do nieznajomego"],["lajk u byłej","stalkowanie byłego"],["niewyciszony mikrofon","kamera włączona za wcześnie"],["jedzenie w zębach","sos na białej koszuli"],["pomylenie grup na czacie","screen do obgadywanego"]],
+"Mocny słownik":[["dzban","palant"],["janusz","sebix"],["grażyna","karyna"],["sztos","essa"],["przegryw","wygryw"],["spierdalaj","wypierdalaj"],["burdel","syf"],["cringe","obciach"]]
+};
+
+/* ---------- NARZĘDZIA ---------- */
+const $ = s => document.querySelector(s);
+const app = $("#app");
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function sample(a,n){return shuffle(a).slice(0,n);}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function vibrate(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){}}
+function impHintFor(n){return n<=5?"1":n<=8?"1–2":"2–3";}
+
+/* ---------- STAN ---------- */
+const settings = {
+  players: [],
+  impostors: 1,
+  mode: "family",            // family | adult
+  adultUnlocked: false,
+  categories: Object.keys(FAMILY).slice(),
+  catHint: true,
+  twin: false,
+  timer: 0,                  // 0 | 15 | 30
+  laps: 2,
+  voteType: "secret",        // secret | open
+  rounds: 5
+};
+let G = null;                // stan partii
+let timerInt = null;
+
+function catList(){return settings.mode==="adult"?ADULT:FAMILY;}
+function newGame(){
+  G = {
+    round: 0,
+    scores: Object.fromEntries(settings.players.map(p=>[p,0])),
+    lastGains: {},
+    decks: {},               // kategoria -> przetasowana talia (bez powtórek w sesji)
+    twinDecks: {},
+    dealIndex: 0,
+    voteIndex: 0,
+    votes: {},               // głosujący -> wskazany (ostatnie rozstrzygające głosowanie)
+    runoff: null,            // lista kandydatów dogrywki albo null
+    tieCount: 0,
+    current: null            // {category, word, twinWord, impostors[], speakOrder[]}
+  };
+}
+function drawWord(cat){
+  const src = catList()[cat];
+  if(!G.decks[cat] || !G.decks[cat].length) G.decks[cat] = shuffle(src);
+  return G.decks[cat].pop();
+}
+function drawTwin(cat){
+  const src = TWINS[cat] || [];
+  if(!G.twinDecks[cat] || !G.twinDecks[cat].length) G.twinDecks[cat] = shuffle(src);
+  const pair = G.twinDecks[cat].pop();
+  return Math.random()<.5 ? {word:pair[0],twin:pair[1]} : {word:pair[1],twin:pair[0]};
+}
+function startRound(){
+  G.round++;
+  const cats = settings.categories.filter(c=>catList()[c] && (!settings.twin || (TWINS[c]&&TWINS[c].length)));
+  const cat = cats[Math.floor(Math.random()*cats.length)];
+  let word, twinWord=null;
+  if(settings.twin){const t=drawTwin(cat);word=t.word;twinWord=t.twin;}
+  else word = drawWord(cat);
+  G.current = {
+    category: cat, word, twinWord,
+    impostors: sample(settings.players, settings.impostors),
+    speakOrder: shuffle(settings.players)
+  };
+  G.dealIndex = 0; G.votes = {}; G.voteIndex = 0; G.runoff = null; G.tieCount = 0; G.lastGains = {};
+  go(dealPass);
+}
+
+/* ---------- RENDER ---------- */
+let currentScreen = null;
+function go(fn, arg){ currentScreen = ()=>fn(arg); stopTimer(); fn(arg); window.scrollTo(0,0); }
+function html(s){ app.innerHTML = `<div class="screen">${s}</div>`; }
+function topbar(label){ return `<div class="topbar"><span>${esc(label||"")}</span><span class="r">Runda ${G.round}/${settings.rounds}</span></div>`; }
+
+/* ---------- EKRAN: START ---------- */
+function scrStart(){
+  html(`
+    <div class="spacer"></div>
+    <div class="pass icon">🕵️</div>
+    <h1 class="logo">IMPOSTOR</h1>
+    <p class="tag">Wszyscy znają hasło. Oprócz jednej osoby.<br>Imprezowa gra słowna na jeden telefon.</p>
+    <div class="spacer"></div>
+    <div class="stack">
+      <button class="btn" id="bNew">Nowa gra</button>
+      <button class="btn ghost" id="bRules">Zasady</button>
+    </div>`);
+  $("#bNew").onclick = ()=>go(scrSetup);
+  $("#bRules").onclick = showRules;
+}
+function showRules(){
+  const m = document.createElement("div");
+  m.className = "modal-bg";
+  m.innerHTML = `<div class="modal">
+    <h2>Jak grać? 🎲</h2>
+    <ol>
+      <li><b>Dodajcie graczy</b> (3–12) i wybierzcie kategorie haseł.</li>
+      <li>Telefon krąży — każdy <b>przytrzymuje kartę</b>, by poznać rolę. Załoga widzi wspólne hasło, impostor nie zna hasła i blefuje.</li>
+      <li>W wylosowanej kolejności każdy mówi <b>na głos jedno skojarzenie</b> z hasłem. Zbyt oczywiste? Impostor podsłucha. Zbyt dziwne? Padnie na Ciebie.</li>
+      <li>Po okrążeniach — dyskusja i <b>głosowanie</b>, kto ściemnia.</li>
+      <li>Wykryty impostor ma <b>ostatnią szansę</b>: jeśli zgadnie hasło spośród 8 kart, kradnie zwycięstwo!</li>
+      <li>Punkty: wygrana impostora <b>+3</b>, trafne głosy załogi <b>+2</b> (tajne) lub <b>+1</b> dla wszystkich (na głos). Po wszystkich rundach — podium.</li>
+    </ol>
+    <button class="btn cyan" id="bCloseRules">Jasne!</button>
+  </div>`;
+  document.body.appendChild(m);
+  m.querySelector("#bCloseRules").onclick = ()=>m.remove();
+  m.onclick = e=>{if(e.target===m)m.remove();};
+}
+
+/* ---------- EKRAN: USTAWIENIA ---------- */
+let nameDraft = "";
+function scrSetup(err){
+  const maxImp = Math.max(1, Math.ceil(settings.players.length/2)-1);
+  if(settings.impostors>maxImp) settings.impostors = maxImp;
+  const cats = Object.keys(catList());
+  html(`
+    <div class="eyebrow">Konfiguracja</div>
+    <h2>Kto gra? 🎉</h2>
+    <div class="stack" style="margin-top:14px">
+      <div class="panel">
+        <h3>Gracze (${settings.players.length}/12)</h3>
+        <div class="row" style="margin-bottom:12px">
+          <input type="text" id="iName" placeholder="Imię gracza…" maxlength="16" autocomplete="off" value="${esc(nameDraft)}">
+          <button class="btn cyan small" id="bAdd" style="flex:0 0 auto">Dodaj</button>
+        </div>
+        <div class="chips" id="playerChips">
+          ${settings.players.map(p=>`<span class="chip player" data-p="${esc(p)}">${esc(p)} <span class="x">×</span></span>`).join("")||`<span class="hint">Min. 3 graczy — dodaj imiona powyżej.</span>`}
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Impostorzy</h3>
+        <div class="stepper">
+          <button id="bImpM">–</button>
+          <div class="val" id="impVal">${settings.impostors}</div>
+          <button id="bImpP">+</button>
+        </div>
+        <p class="hint" style="margin-top:10px">Podpowiedź: ${settings.players.length>=3?`przy ${settings.players.length} graczach → ${impHintFor(settings.players.length)}`:"3–5 graczy → 1 · 6–8 → 1–2 · 9–12 → 2–3"}. Zawsze mniej niż połowa.</p>
+      </div>
+      <div class="panel">
+        <h3>Tryb treści</h3>
+        <div class="seg" id="segMode">
+          <button data-m="family" class="${settings.mode==="family"?"on":""}">🏡 Rodzinny</button>
+          <button data-m="adult" class="${settings.mode==="adult"?"on":""}">🔞 18+</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Kategorie haseł</h3>
+        <div class="chips" id="catChips">
+          ${cats.map(c=>`<span class="chip ${settings.categories.includes(c)?"sel":""}" data-c="${esc(c)}">${esc(c)}</span>`).join("")}
+        </div>
+      </div>
+      <details class="adv">
+        <summary>Więcej opcji</summary>
+        <div class="inner">
+          <div class="switch"><div class="lbl">Podpowiedź kategorii<small>Impostor widzi kategorię hasła</small></div><div class="tgl ${settings.catHint?"on":""}" id="tHint"></div></div>
+          <div class="switch"><div class="lbl">Bliźniacze hasło 😈<small>Impostor dostaje podobne hasło i nie wie, że jest impostorem</small></div><div class="tgl ${settings.twin?"on":""}" id="tTwin"></div></div>
+          <div class="field"><label>Timer wypowiedzi</label>
+            <div class="seg" id="segTimer">
+              <button data-t="0" class="${settings.timer===0?"on":""}">Wył.</button>
+              <button data-t="15" class="${settings.timer===15?"on":""}">15 s</button>
+              <button data-t="30" class="${settings.timer===30?"on":""}">30 s</button>
+            </div>
+          </div>
+          <div class="field"><label>Okrążenia skojarzeń</label>
+            <div class="seg" id="segLaps">
+              ${[1,2,3].map(n=>`<button data-l="${n}" class="${settings.laps===n?"on":""}">${n}</button>`).join("")}
+            </div>
+          </div>
+          <div class="field"><label>Głosowanie</label>
+            <div class="seg" id="segVote">
+              <button data-v="secret" class="${settings.voteType==="secret"?"on":""}">🤫 Tajne</button>
+              <button data-v="open" class="${settings.voteType==="open"?"on":""}">🗣️ Na głos</button>
+            </div>
+          </div>
+          <div class="field"><label>Liczba rund</label>
+            <div class="seg" id="segRounds">
+              ${[3,5,7].map(n=>`<button data-r="${n}" class="${settings.rounds===n?"on":""}">${n}</button>`).join("")}
+            </div>
+          </div>
+        </div>
+      </details>
+      <p class="err">${esc(err||"")}</p>
+      <button class="btn" id="bStart">Rozpoczynamy! 🚀</button>
+      <button class="btn ghost" id="bBack">← Menu</button>
+    </div>`);
+
+  const inp = $("#iName");
+  inp.oninput = ()=>{nameDraft = inp.value;};
+  const addPlayer = ()=>{
+    const n = inp.value.trim();
+    if(!n) return;
+    if(settings.players.length>=12){nameDraft="";scrSetup("Maksymalnie 12 graczy.");return;}
+    if(settings.players.some(p=>p.toLowerCase()===n.toLowerCase())){scrSetup("Imiona muszą być unikalne.");return;}
+    settings.players.push(n); nameDraft="";
+    scrSetup(); $("#iName").focus();
+  };
+  $("#bAdd").onclick = addPlayer;
+  inp.onkeydown = e=>{if(e.key==="Enter"){e.preventDefault();addPlayer();}};
+  $("#playerChips").onclick = e=>{
+    const chip = e.target.closest(".chip[data-p]"); if(!chip) return;
+    settings.players = settings.players.filter(p=>p!==chip.dataset.p);
+    scrSetup();
+  };
+  $("#bImpM").onclick = ()=>{settings.impostors=Math.max(1,settings.impostors-1);$("#impVal").textContent=settings.impostors;};
+  $("#bImpP").onclick = ()=>{settings.impostors=Math.min(maxImp,settings.impostors+1);$("#impVal").textContent=settings.impostors;};
+  $("#segMode").onclick = e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    const m = b.dataset.m;
+    if(m==="adult" && !settings.adultUnlocked){ showAgeGate(); return; }
+    if(m!==settings.mode){ settings.mode=m; settings.categories=Object.keys(catList()).slice(); scrSetup(); }
+  };
+  $("#catChips").onclick = e=>{
+    const chip = e.target.closest(".chip[data-c]"); if(!chip) return;
+    const c = chip.dataset.c;
+    if(settings.categories.includes(c)) settings.categories = settings.categories.filter(x=>x!==c);
+    else settings.categories.push(c);
+    chip.classList.toggle("sel");
+  };
+  $("#tHint").onclick = e=>{settings.catHint=!settings.catHint;e.target.classList.toggle("on");};
+  $("#tTwin").onclick = e=>{settings.twin=!settings.twin;e.target.classList.toggle("on");};
+  const segBind=(id,attr,set)=>{$(id).onclick=e=>{const b=e.target.closest("button");if(!b)return;set(b.dataset[attr]);$(id).querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));};};
+  segBind("#segTimer","t",v=>settings.timer=+v);
+  segBind("#segLaps","l",v=>settings.laps=+v);
+  segBind("#segVote","v",v=>settings.voteType=v);
+  segBind("#segRounds","r",v=>settings.rounds=+v);
+  $("#bStart").onclick = ()=>{
+    if(settings.players.length<3){scrSetup("Potrzeba minimum 3 graczy.");return;}
+    if(settings.impostors>=settings.players.length/2){scrSetup("Impostorów musi być mniej niż połowa graczy.");return;}
+    if(!settings.categories.length){scrSetup("Wybierz co najmniej jedną kategorię.");return;}
+    newGame(); startRound();
+  };
+  $("#bBack").onclick = ()=>go(scrStart);
+}
+function showAgeGate(){
+  const m = document.createElement("div");
+  m.className = "modal-bg";
+  m.innerHTML = `<div class="modal">
+    <h2>🔞 Tryb 18+</h2>
+    <p>Ten tryb zawiera <b>pikantne i wulgarne hasła</b>. Czy wszyscy gracze mają ukończone 18 lat?</p>
+    <button class="btn danger" id="bYes">Tak, gramy</button>
+    <button class="btn ghost" id="bNo">Wróć</button>
+  </div>`;
+  document.body.appendChild(m);
+  m.querySelector("#bYes").onclick = ()=>{
+    settings.adultUnlocked = true; settings.mode = "adult";
+    settings.categories = Object.keys(ADULT).slice();
+    m.remove(); scrSetup();
+  };
+  m.querySelector("#bNo").onclick = ()=>m.remove();
+}
+
+/* ---------- EKRAN: ROZDANIE RÓL ---------- */
+function dealPass(){
+  const name = settings.players[G.dealIndex];
+  html(`
+    ${topbar("Rozdanie ról · gracz "+(G.dealIndex+1)+"/"+settings.players.length)}
+    <div class="pass">
+      <div class="icon">📱</div>
+      <div class="eyebrow" style="color:var(--muted)">Podaj telefon</div>
+      <div class="who">${esc(name)}</div>
+      <p class="sub">Nikt inny nie patrzy? No to jedziemy.</p>
+    </div>
+    <button class="btn cyan" id="bMe">Jestem ${esc(name)} — pokaż kartę</button>`);
+  $("#bMe").onclick = ()=>go(dealCard);
+}
+function dealCard(){
+  const name = settings.players[G.dealIndex];
+  const isImp = G.current.impostors.includes(name);
+  const last = G.dealIndex === settings.players.length-1;
+  let backInner;
+  if(isImp && settings.twin){
+    backInner = `<div class="rolelbl">Twoje hasło</div><div class="word">${esc(G.current.twinWord)}</div><div class="catline">Kategoria: ${esc(G.current.category)}</div>`;
+  } else if(isImp){
+    backInner = `<div class="rolelbl">Twoja rola</div><div class="impword">JESTEŚ<br>IMPOSTOREM 🤫</div>${settings.catHint?`<div class="catline">Kategoria: ${esc(G.current.category)}</div>`:""}<div class="hint">Blefuj, jakby jutra miało nie być.</div>`;
+  } else {
+    backInner = `<div class="rolelbl">Twoje hasło</div><div class="word">${esc(G.current.word)}</div><div class="catline">Kategoria: ${esc(G.current.category)}</div>`;
+  }
+  html(`
+    ${topbar(esc(name))}
+    <div class="cardwrap">
+      <p class="sub" style="text-align:center">🤫 <b>Przytrzymaj kartę</b>, żeby zobaczyć swoją rolę.<br>Po puszczeniu natychmiast się zakryje.</p>
+      <div class="role-card" id="card">
+        <div class="face front"><div class="q">?</div><div class="tip">PRZYTRZYMAJ MNIE</div></div>
+        <div class="face back ${isImp && !settings.twin ? "imp":"crew"}">${backInner}</div>
+      </div>
+      <button class="btn" id="bNext" disabled>${last?"Zaczynamy rundę! 🎬":"Przekaż dalej →"}</button>
+    </div>`);
+  const card = $("#card"), next = $("#bNext");
+  let holdT = null, seen = false;
+  const open = ()=>{
+    card.classList.add("open");
+    vibrate(30);
+    if(!seen){seen=true;next.disabled=false;}
+  };
+  const close = ()=>{clearTimeout(holdT);holdT=null;card.classList.remove("open");};
+  card.addEventListener("pointerdown", e=>{e.preventDefault();clearTimeout(holdT);holdT=setTimeout(open,500);});
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>card.addEventListener(ev, close));
+  card.addEventListener("contextmenu", e=>e.preventDefault());
+  next.onclick = ()=>{
+    if(last) go(scrRound);
+    else { G.dealIndex++; go(dealPass); }
+  };
+}
+
+/* ---------- EKRAN: RUNDA ---------- */
+function scrRound(){
+  html(`
+    ${topbar("Runda skojarzeń")}
+    <div class="eyebrow">Kolejność mówienia</div>
+    <h2>Po jednym skojarzeniu! 🎤</h2>
+    <p class="sub" style="margin-bottom:14px">Okrążenia: <b style="color:var(--lime)">${settings.laps}</b> · mówicie na głos, telefonu nie pokazujecie.</p>
+    <div class="order">
+      ${G.current.speakOrder.map((p,i)=>`<div class="p"><span class="n">${i+1}</span>${esc(p)}</div>`).join("")}
+    </div>
+    ${settings.timer?`
+    <div class="panel" style="margin-top:14px">
+      <div class="timerbox">
+        <div class="timerbig" id="tDisp">${settings.timer}</div>
+        <div class="row">
+          <button class="btn cyan small" id="bTStart">▶ Start</button>
+          <button class="btn ghost small" id="bTReset">↺ Reset</button>
+        </div>
+        <p class="hint">Timer na wypowiedź — resetuj przy kolejnym graczu.</p>
+      </div>
+    </div>`:""}
+    <div class="spacer"></div>
+    <div class="stack" style="margin-top:16px">
+      <button class="btn" id="bVote">Głosujemy! 🗳️</button>
+    </div>`);
+  if(settings.timer){
+    const disp = $("#tDisp");
+    let left = settings.timer;
+    const renderT = ()=>{disp.textContent=left;disp.classList.toggle("low",left<=5);};
+    $("#bTStart").onclick = ()=>{
+      stopTimer(); left = settings.timer; renderT();
+      timerInt = setInterval(()=>{
+        left--;
+        if(left<=0){left=0;stopTimer();vibrate([120,60,120]);}
+        renderT();
+      },1000);
+    };
+    $("#bTReset").onclick = ()=>{stopTimer();left=settings.timer;renderT();};
+  }
+  $("#bVote").onclick = ()=>{
+    if(settings.voteType==="secret"){G.voteIndex=0;G.votes={};go(votePass);}
+    else go(voteOpen);
+  };
+}
+function stopTimer(){if(timerInt){clearInterval(timerInt);timerInt=null;}}
+
+/* ---------- GŁOSOWANIE TAJNE ---------- */
+function votePass(){
+  const name = settings.players[G.voteIndex];
+  html(`
+    ${topbar(G.runoff?"DOGRYWKA · głos "+(G.voteIndex+1)+"/"+settings.players.length:"Tajne głosowanie · głos "+(G.voteIndex+1)+"/"+settings.players.length)}
+    <div class="pass">
+      <div class="icon">🗳️</div>
+      <div class="eyebrow" style="color:var(--muted)">Podaj telefon</div>
+      <div class="who">${esc(name)}</div>
+      ${G.runoff?`<p class="sub">⚡ Dogrywka między: <b>${G.runoff.map(esc).join(", ")}</b></p>`:`<p class="sub">Zagłosuj w tajemnicy. Kto ściemnia?</p>`}
+    </div>
+    <button class="btn cyan" id="bMe">Jestem ${esc(name)} — głosuję</button>`);
+  $("#bMe").onclick = ()=>go(votePick);
+}
+function votePick(){
+  const name = settings.players[G.voteIndex];
+  const candidates = (G.runoff || settings.players).filter(p=>p!==name);
+  let sel = null;
+  html(`
+    ${topbar(esc(name)+" głosuje")}
+    <div class="eyebrow">${G.runoff?"Dogrywka ⚡":"Tajne głosowanie"}</div>
+    <h2>Kto jest impostorem? 🤔</h2>
+    <p class="sub" style="margin-bottom:14px">Wybierz podejrzanego i zatwierdź.</p>
+    <div class="votes" id="vgrid">
+      ${candidates.map(p=>`<button class="vbtn" data-p="${esc(p)}">${esc(p)}</button>`).join("")}
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="bOk" disabled style="margin-top:16px">Zatwierdź głos</button>`);
+  $("#vgrid").onclick = e=>{
+    const b = e.target.closest(".vbtn"); if(!b) return;
+    sel = b.dataset.p;
+    document.querySelectorAll(".vbtn").forEach(x=>x.classList.toggle("sel",x===b));
+    $("#bOk").disabled = false;
+  };
+  $("#bOk").onclick = ()=>{
+    G.votes[name] = sel;
+    G.voteIndex++;
+    if(G.voteIndex < settings.players.length) go(votePass);
+    else tallyVotes();
+  };
+}
+function tallyVotes(){
+  const counts = {};
+  Object.values(G.votes).forEach(t=>counts[t]=(counts[t]||0)+1);
+  const max = Math.max(...Object.values(counts));
+  const top = Object.keys(counts).filter(p=>counts[p]===max);
+  if(top.length===1){ resolveAccused(top[0]); return; }
+  G.tieCount++;
+  if(G.tieCount>=2){ finishRound({type:"tie"}); return; }
+  G.runoff = top; G.votes = {}; G.voteIndex = 0;
+  go(scrTieInfo, top);
+}
+function scrTieInfo(top){
+  html(`
+    ${topbar("Remis!")}
+    <div class="reveal-center">
+      <div class="icon" style="font-size:3.4rem">⚡</div>
+      <h2 style="font-size:2rem">REMIS!</h2>
+      <p class="sub">Dogrywka wyłącznie między:<br><b style="color:var(--pink);font-size:1.2rem">${top.map(esc).join(" · ")}</b></p>
+      <p class="sub">Drugi remis = nikt nie odpada i rundę wygrywa impostor. 😏</p>
+    </div>
+    <button class="btn" id="bGo">Dogrywka! →</button>`);
+  $("#bGo").onclick = ()=>go(votePass);
+}
+
+/* ---------- GŁOSOWANIE NA GŁOS ---------- */
+function voteOpen(){
+  let sel = null;
+  html(`
+    ${topbar("Głosowanie na głos")}
+    <div class="eyebrow">Na trzy-cztery!</div>
+    <h2>Kogo wskazała grupa? 🫵</h2>
+    <p class="sub" style="margin-bottom:14px">Wszyscy jednocześnie wskazują palcami. Prowadzący klika wynik.</p>
+    <div class="votes" id="vgrid">
+      ${settings.players.map(p=>`<button class="vbtn" data-p="${esc(p)}">${esc(p)}</button>`).join("")}
+    </div>
+    <div class="spacer"></div>
+    <div class="stack" style="margin-top:16px">
+      <button class="btn" id="bOk" disabled>Zatwierdź wskazanie</button>
+      <button class="btn ghost" id="bNoDeal">Brak zgody — wygrywa impostor 😈</button>
+    </div>`);
+  $("#vgrid").onclick = e=>{
+    const b = e.target.closest(".vbtn"); if(!b) return;
+    sel = b.dataset.p;
+    document.querySelectorAll(".vbtn").forEach(x=>x.classList.toggle("sel",x===b));
+    $("#bOk").disabled = false;
+  };
+  $("#bOk").onclick = ()=>resolveAccused(sel);
+  $("#bNoDeal").onclick = ()=>finishRound({type:"tie"});
+}
+
+/* ---------- ROZSTRZYGNIĘCIE ---------- */
+function resolveAccused(accused){
+  go(scrAccused, accused);
+}
+function scrAccused(accused){
+  html(`
+    ${topbar("Werdykt")}
+    <div class="reveal-center">
+      <div class="eyebrow">Grupa wskazała…</div>
+      <div class="big-reveal" style="color:var(--pink)">${esc(accused)}</div>
+      <p class="sub">Czas na chwilę prawdy. 🥁</p>
+    </div>
+    <button class="btn danger" id="bReveal">Ujawnij rolę!</button>`);
+  $("#bReveal").onclick = ()=>{
+    vibrate([60,40,120]);
+    if(G.current.impostors.includes(accused)) go(scrCaught, accused);
+    else go(scrInnocent, accused);
+  };
+}
+function scrInnocent(accused){
+  html(`
+    ${topbar("Wtopa!")}
+    <div class="reveal-center">
+      <div class="big-reveal">${esc(accused)}</div>
+      <span class="badge crew">NIEWINNY ZAŁOGANT</span>
+      <p class="sub">Auć. Wskazaliście swojego. 💀<br><b style="color:var(--red)">Impostor wygrywa rundę!</b></p>
+    </div>
+    <button class="btn" id="bNext">Pełne ujawnienie →</button>`);
+  $("#bNext").onclick = ()=>finishRound({type:"innocent"});
+}
+function scrCaught(accused){
+  html(`
+    ${topbar("Mamy go!")}
+    <div class="reveal-center">
+      <div class="big-reveal">${esc(accused)}</div>
+      <span class="badge imp">IMPOSTOR 🚨</span>
+      <p class="sub">Wykryty! Ale to jeszcze nie koniec…<br>Impostor dostaje <b style="color:var(--amber)">ostatnią szansę</b>: jeśli wskaże prawdziwe hasło, ukradnie zwycięstwo!</p>
+    </div>
+    <button class="btn" id="bLC" style="background:linear-gradient(135deg,var(--amber),#ffd36e);box-shadow:0 8px 28px rgba(255,176,46,.35)">Ostatnia szansa 🎯</button>`);
+  $("#bLC").onclick = ()=>go(scrLastChance, accused);
+}
+function scrLastChance(accused){
+  const twin = settings.twin ? G.current.twinWord : null;
+  const pool = catList()[G.current.category].filter(w=>w!==G.current.word && w!==twin);
+  const decoys = sample(pool, twin ? 6 : 7);
+  if(twin) decoys.push(twin);
+  const cards = shuffle([G.current.word, ...decoys]);
+  html(`
+    ${topbar("Ostatnia szansa · "+esc(accused))}
+    <div class="eyebrow">Telefon bierze ${esc(accused)}</div>
+    <h2>Które hasło jest prawdziwe? 🎯</h2>
+    <p class="sub" style="margin-bottom:14px">Kategoria: <b style="color:var(--cyan)">${esc(G.current.category)}</b>. Jeden strzał. Trafisz — kradniesz rundę.</p>
+    <div class="lc-grid">
+      ${cards.map(w=>`<button class="lc" data-w="${esc(w)}">${esc(w)}</button>`).join("")}
+    </div>`);
+  app.querySelector(".lc-grid").onclick = e=>{
+    const b = e.target.closest(".lc"); if(!b) return;
+    const hit = b.dataset.w === G.current.word;
+    vibrate(hit?[80,50,80,50,160]:200);
+    finishRound({type: hit?"steal":"caught", accused});
+  };
+}
+
+/* ---------- KONIEC RUNDY + PUNKTY ---------- */
+function finishRound(result){
+  const imps = G.current.impostors;
+  const gains = {};
+  const add = (p,n)=>{gains[p]=(gains[p]||0)+n;};
+  let title, desc, impWon;
+  if(result.type==="tie"){
+    impWon = true; imps.forEach(p=>add(p,3));
+    title = "Impostor przetrwał! 😏";
+    desc = settings.voteType==="secret" ? "Podwójny remis — nikt nie odpada, punkt przetrwania dla impostora." : "Brak decyzji grupy — impostor wygrywa rundę.";
+  } else if(result.type==="innocent"){
+    impWon = true; imps.forEach(p=>add(p,3));
+    title = "Impostor wygrywa rundę! 😈";
+    desc = "Grupa wskazała niewinnego załoganta.";
+  } else if(result.type==="steal"){
+    impWon = true; imps.forEach(p=>add(p,3));
+    title = "Skradzione zwycięstwo! 🎯";
+    desc = `${result.accused} wykryty, ale trafił hasło i kradnie rundę!`;
+  } else { // caught
+    impWon = false;
+    title = "Załoga wygrywa! 🎉";
+    if(settings.voteType==="secret"){
+      desc = "Impostor wykryty i nie zgadł hasła. +2 dla każdego, kto zagłosował trafnie.";
+      settings.players.forEach(p=>{
+        if(!imps.includes(p) && imps.includes(G.votes[p])) add(p,2);
+      });
+    } else {
+      desc = "Impostor wykryty i nie zgadł hasła. +1 dla całej załogi.";
+      settings.players.forEach(p=>{if(!imps.includes(p)) add(p,1);});
+    }
+  }
+  Object.entries(gains).forEach(([p,n])=>{G.scores[p]+=n;});
+  G.lastGains = gains;
+  go(scrReveal, {title, desc, impWon});
+}
+function scrReveal({title, desc, impWon}){
+  const imps = G.current.impostors;
+  const correctVoters = settings.voteType==="secret"
+    ? settings.players.filter(p=>!imps.includes(p) && imps.includes(G.votes[p]))
+    : [];
+  html(`
+    ${topbar("Pełne ujawnienie")}
+    <div class="reveal-center">
+      <h2 style="font-size:1.7rem">${title}</h2>
+      <p class="sub">${esc(desc)}</p>
+      <div class="panel" style="text-align:center">
+        <div class="rolelbl" style="margin-bottom:8px">Hasło rundy</div>
+        <div class="word">${esc(G.current.word)}</div>
+        <div class="catline" style="margin-top:6px">Kategoria: ${esc(G.current.category)}</div>
+        ${settings.twin?`<div class="hint" style="margin-top:8px">Bliźniacze hasło impostora: <b style="color:var(--red)">${esc(G.current.twinWord)}</b></div>`:""}
+      </div>
+      <div class="panel" style="text-align:center">
+        <div class="rolelbl" style="margin-bottom:8px">${imps.length>1?"Impostorzy":"Impostor"}</div>
+        <div class="impword" style="font-size:1.5rem">${imps.map(esc).join(" · ")}</div>
+        ${correctVoters.length?`<div class="hint" style="margin-top:10px">🎯 Trafnie głosowali: <b style="color:var(--lime)">${correctVoters.map(esc).join(", ")}</b></div>`:""}
+      </div>
+    </div>
+    <button class="btn" id="bScore">Tabela wyników →</button>`);
+  $("#bScore").onclick = ()=>go(scrScore);
+}
+function scrScore(){
+  const rows = Object.entries(G.scores).sort((a,b)=>b[1]-a[1]);
+  const lastRound = G.round >= settings.rounds;
+  const topScore = rows[0][1];
+  html(`
+    ${topbar("Tabela wyników")}
+    <div class="eyebrow">Po rundzie ${G.round}</div>
+    <h2>Ranking 🏆</h2>
+    <div class="score" style="margin-top:14px">
+      ${rows.map(([p,s],i)=>`
+        <div class="srow ${s===topScore&&s>0?"top":""}">
+          <span class="rank">${i+1}.</span>
+          <span class="name">${esc(p)}</span>
+          ${G.lastGains[p]?`<span class="delta">+${G.lastGains[p]}</span>`:""}
+          <span class="pts">${s}</span>
+        </div>`).join("")}
+    </div>
+    <div class="spacer"></div>
+    <div class="stack" style="margin-top:16px">
+      ${lastRound
+        ? `<button class="btn" id="bPodium">Zobacz podium! 🥇</button>`
+        : `<button class="btn" id="bNext">Następna runda →</button>
+           <button class="btn ghost" id="bEnd">Zakończ grę</button>`}
+    </div>`);
+  if(lastRound) $("#bPodium").onclick = ()=>go(scrPodium);
+  else {
+    $("#bNext").onclick = ()=>startRound();
+    $("#bEnd").onclick = ()=>go(scrPodium);
+  }
+}
+function scrPodium(){
+  const rows = Object.entries(G.scores).sort((a,b)=>b[1]-a[1]);
+  const [p1,p2,p3] = rows;
+  const conf = shuffle(["#ff2e7e","#00e0ff","#c8ff3e","#ffb02e","#ffffff"]);
+  html(`
+    <div class="confetti">${Array.from({length:40},(_,i)=>`<i style="left:${Math.random()*100}%;background:${conf[i%5]};animation-duration:${2.5+Math.random()*3}s;animation-delay:${Math.random()*3}s"></i>`).join("")}</div>
+    <div class="spacer"></div>
+    <div class="eyebrow" style="text-align:center">Koniec partii</div>
+    <h2 style="text-align:center;font-size:2rem">🎉 ${esc(p1[0])} wygrywa! 🎉</h2>
+    <div class="podium">
+      ${p2?`<div class="pod p2"><div class="cup">🥈</div><div class="pname">${esc(p2[0])}</div><div class="ppts">${p2[1]} pkt</div><div class="bar"></div></div>`:""}
+      <div class="pod p1"><div class="cup">🥇</div><div class="pname">${esc(p1[0])}</div><div class="ppts">${p1[1]} pkt</div><div class="bar"></div></div>
+      ${p3?`<div class="pod p3"><div class="cup">🥉</div><div class="pname">${esc(p3[0])}</div><div class="ppts">${p3[1]} pkt</div><div class="bar"></div></div>`:""}
+    </div>
+    ${rows.length>3?`<div class="score">${rows.slice(3).map(([p,s],i)=>`<div class="srow"><span class="rank">${i+4}.</span><span class="name">${esc(p)}</span><span class="pts">${s}</span></div>`).join("")}</div>`:""}
+    <div class="spacer"></div>
+    <div class="stack" style="margin-top:16px">
+      <button class="btn" id="bAgain">Nowa partia (ci sami gracze)</button>
+      <button class="btn ghost" id="bMenu">Menu główne</button>
+    </div>`);
+  $("#bAgain").onclick = ()=>{newGame();startRound();};
+  $("#bMenu").onclick = ()=>go(scrStart);
+}
+
+/* debug hook (do testów) */
+window.__impostor = {settings, get G(){return G;}, FAMILY, ADULT, TWINS, startRound, newGame, go, screens:{scrStart,scrSetup,scrRound,scrScore,scrPodium}};
+
+go(scrStart);
+</script>
+</body>
+</html>
